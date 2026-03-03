@@ -1,9 +1,21 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// 加载签名配置 (本地开发: android/key.properties, CI: 通过 Secrets 注入)
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+val hasKeystore = keystorePropertiesFile.exists() ||
+    System.getenv("STORE_PASSWORD") != null
 
 android {
     namespace = "com.busic.busic"
@@ -19,11 +31,23 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    if (hasKeystore) {
+        signingConfigs {
+            create("release") {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                    ?: System.getenv("KEY_ALIAS") ?: "upload"
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                    ?: System.getenv("KEY_PASSWORD") ?: ""
+                storeFile = file(keystoreProperties.getProperty("storeFile")
+                    ?: "upload-keystore.jks")
+                storePassword = keystoreProperties.getProperty("storePassword")
+                    ?: System.getenv("STORE_PASSWORD") ?: ""
+            }
+        }
+    }
+
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.busic.busic"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -32,9 +56,11 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
