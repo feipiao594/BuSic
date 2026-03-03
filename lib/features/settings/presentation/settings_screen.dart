@@ -52,7 +52,7 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.brightness_6),
             title: Text(l10n.themeMode),
-            trailing: SegmentedButton<ThemeMode>(
+            subtitle: SegmentedButton<ThemeMode>(
               segments: [
                 ButtonSegment(
                   value: ThemeMode.system,

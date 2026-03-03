@@ -10,7 +10,16 @@ import 'player_repository.dart';
 class PlayerRepositoryImpl implements PlayerRepository {
   final Player _player;
 
-  PlayerRepositoryImpl() : _player = Player();
+  PlayerRepositoryImpl() : _player = Player() {
+    // Configure mpv properties for better audio output:
+    // 1. Allow volume amplification up to 150% (mpv default is 130).
+    // 2. Enable loudness normalization (loudnorm) to bring quiet audio
+    //    closer to standard broadcast level (-14 LUFS), which helps match
+    //    the perceived loudness of B站 native player.
+    final nativePlayer = _player.platform as NativePlayer;
+    nativePlayer.setProperty('volume-max', '150');
+    nativePlayer.setProperty('af', 'loudnorm=I=-14:TP=-1:LRA=11');
+  }
 
   @override
   Future<void> play(domain.AudioTrack track) async {

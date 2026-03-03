@@ -12,11 +12,19 @@ import '../domain/models/play_mode.dart';
 import 'widgets/play_queue_sheet.dart';
 
 /// Full-screen player view with large cover art, lyrics, and controls.
-class FullPlayerScreen extends ConsumerWidget {
+class FullPlayerScreen extends ConsumerStatefulWidget {
   const FullPlayerScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FullPlayerScreen> createState() => _FullPlayerScreenState();
+}
+
+class _FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
+  /// Non-null while the user is dragging the seek bar.
+  double? _dragValue;
+
+  @override
+  Widget build(BuildContext context) {
     final playerState = ref.watch(playerNotifierProvider);
     final track = playerState.currentTrack;
     final l10n = context.l10n;
@@ -130,21 +138,29 @@ class FullPlayerScreen extends ConsumerWidget {
                           thumbColor: Colors.white,
                         ),
                         child: Slider(
-                          value: playerState.duration.inMilliseconds > 0
+                          value: _dragValue ??
+                              (playerState.duration.inMilliseconds > 0
                               ? playerState.position.inMilliseconds
                                   .toDouble()
                                   .clamp(
                                       0,
                                       playerState.duration.inMilliseconds
                                           .toDouble())
-                              : 0,
+                              : 0),
                           max: playerState.duration.inMilliseconds > 0
                               ? playerState.duration.inMilliseconds.toDouble()
                               : 1,
+                          onChangeStart: (value) {
+                            setState(() => _dragValue = value);
+                          },
                           onChanged: (value) {
+                            setState(() => _dragValue = value);
+                          },
+                          onChangeEnd: (value) {
                             ref
                                 .read(playerNotifierProvider.notifier)
                                 .seekTo(Duration(milliseconds: value.toInt()));
+                            setState(() => _dragValue = null);
                           },
                         ),
                       ),
@@ -155,7 +171,9 @@ class FullPlayerScreen extends ConsumerWidget {
                           children: [
                             Text(
                               Formatters.formatDuration(
-                                  playerState.position),
+                                  _dragValue != null
+                                      ? Duration(milliseconds: _dragValue!.toInt())
+                                      : playerState.position),
                               style: const TextStyle(
                                   color: Colors.white70, fontSize: 12),
                             ),

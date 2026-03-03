@@ -14,13 +14,21 @@ import '../domain/models/play_mode.dart';
 /// Bottom playback control bar displayed across all main screens.
 ///
 /// Shows:
-/// - Progress slider (draggable)
+/// - Progress slider (draggable, seeks on release)
 /// - Mini cover art + track title/artist + playlist name
 /// - Previous / Play|Pause / Next buttons
 /// - Play mode toggle
 /// - Time display
-class PlayerBar extends ConsumerWidget {
+class PlayerBar extends ConsumerStatefulWidget {
   const PlayerBar({super.key});
+
+  @override
+  ConsumerState<PlayerBar> createState() => _PlayerBarState();
+}
+
+class _PlayerBarState extends ConsumerState<PlayerBar> {
+  /// Non-null while the user is dragging the progress bar.
+  double? _dragProgress;
 
   IconData _playModeIcon(PlayMode mode) {
     switch (mode) {
@@ -71,7 +79,7 @@ class PlayerBar extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final playerState = ref.watch(playerNotifierProvider);
     final track = playerState.currentTrack;
 
@@ -129,14 +137,21 @@ class PlayerBar extends ConsumerWidget {
                   inactiveTrackColor: context.colorScheme.primary.withValues(alpha: 0.2),
                 ),
                 child: Slider(
-                  value: progress.clamp(0.0, 1.0),
+                  value: (_dragProgress ?? progress).clamp(0.0, 1.0),
+                  onChangeStart: (value) {
+                    setState(() => _dragProgress = value);
+                  },
                   onChanged: (value) {
+                    setState(() => _dragProgress = value);
+                  },
+                  onChangeEnd: (value) {
                     if (playerState.duration.inMilliseconds > 0) {
                       final position = Duration(
                         milliseconds: (value * playerState.duration.inMilliseconds).toInt(),
                       );
                       ref.read(playerNotifierProvider.notifier).seekTo(position);
                     }
+                    setState(() => _dragProgress = null);
                   },
                 ),
               ),
