@@ -14,9 +14,9 @@ on:
     workflows: [CI]
     types: [completed]
 
-# 确保同时只有一个 release 在跑
+# 确保同时只有一个 release 在跑 (按触发源区分)
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.event.workflow_run.head_branch || github.ref }}
   cancel-in-progress: true
 
 permissions:
