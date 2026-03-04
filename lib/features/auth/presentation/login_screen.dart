@@ -128,14 +128,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ],
       ),
       body: Center(
-        child: Card(
-          elevation: 4,
-          margin: const EdgeInsets.all(32),
-          child: Padding(
-            padding: const EdgeInsets.all(40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Card(
+            elevation: 4,
+            margin: const EdgeInsets.all(32),
+            child: Padding(
+              padding: const EdgeInsets.all(40),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
                 Icon(Icons.music_note, size: 48, color: colorScheme.primary),
                 const SizedBox(height: 16),
                 Text('BuSic', style: context.textTheme.headlineMedium?.copyWith(
@@ -180,6 +182,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ],
             ),
           ),
+        ),
         ),
       ),
     );
