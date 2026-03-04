@@ -120,4 +120,4 @@ app.*.symbols
 
 .idea
 .vscode
-.github/instructions/
+.github/copilot-instructions.md
