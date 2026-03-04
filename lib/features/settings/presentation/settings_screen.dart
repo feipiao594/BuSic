@@ -261,7 +261,7 @@ class SettingsScreen extends ConsumerWidget {
               showAboutDialog(
                 context: context,
                 applicationName: 'BuSic',
-                applicationVersion: '0.1.1',
+                applicationVersion: '0.2.1',
                 applicationLegalese: 'A cross-platform Bilibili music player.',
               );
             },
