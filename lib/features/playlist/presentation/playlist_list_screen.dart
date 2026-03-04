@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,24 +7,8 @@ import '../../../shared/widgets/common_dialogs.dart';
 import '../../share/application/share_notifier.dart';
 import '../../share/presentation/widgets/import_preview_dialog.dart';
 import '../application/playlist_notifier.dart';
+import 'widgets/cover_selection_dialog.dart';
 import 'widgets/playlist_tile.dart';
-
-Future<String?> _pickImageFile({String? title}) async {
-  if (!Platform.isLinux) return null;
-  try {
-    final result = await Process.run('zenity', [
-      '--file-selection',
-      '--title=${title ?? '选择封面图片'}',
-      '--file-filter=Image files | *.png *.jpg *.jpeg *.webp *.bmp',
-      '--file-filter=All files | *',
-    ]);
-    if (result.exitCode == 0) {
-      final path = (result.stdout as String).trim();
-      if (path.isNotEmpty) return path;
-    }
-  } catch (_) {}
-  return null;
-}
 
 /// Screen displaying all user playlists.
 ///
@@ -97,18 +79,40 @@ class PlaylistListScreen extends ConsumerWidget {
       ),
       floatingActionButton: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          FloatingActionButton.small(
-            heroTag: 'import',
-            onPressed: () => _importFromClipboard(context, ref),
-            tooltip: context.l10n.importFromClipboard,
-            child: const Icon(Icons.paste),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton(
+                heroTag: 'import',
+                onPressed: () => _importFromClipboard(context, ref),
+                tooltip: l10n.importFromClipboard,
+                child: const Icon(Icons.paste),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                l10n.importLabel,
+                style: context.textTheme.labelSmall,
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          FloatingActionButton(
-            heroTag: 'create',
-            onPressed: () => _createPlaylist(context, ref),
-            child: const Icon(Icons.add),
+          const SizedBox(width: 16),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton(
+                heroTag: 'create',
+                onPressed: () => _createPlaylist(context, ref),
+                tooltip: l10n.createPlaylist,
+                child: const Icon(Icons.add),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                l10n.createLabel,
+                style: context.textTheme.labelSmall,
+              ),
+            ],
           ),
         ],
       ),
@@ -207,25 +211,13 @@ class PlaylistListScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.image_outlined),
-              title: const Text('修改封面'),
-              onTap: () async {
+              title: Text(l10n.changeCover),
+              onTap: () {
                 Navigator.pop(ctx);
-                final path = await _pickImageFile(title: '选择歌单封面');
-                if (path != null && path.isNotEmpty) {
-                  await ref
-                      .read(playlistListNotifierProvider.notifier)
-                      .updatePlaylistCover(id, path);
-                }
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.image_not_supported_outlined),
-              title: const Text('恢复默认封面'),
-              onTap: () async {
-                Navigator.pop(ctx);
-                await ref
-                    .read(playlistListNotifierProvider.notifier)
-                    .updatePlaylistCover(id, null);
+                showDialog(
+                  context: context,
+                  builder: (_) => CoverSelectionDialog(playlistId: id),
+                );
               },
             ),
             ListTile(
