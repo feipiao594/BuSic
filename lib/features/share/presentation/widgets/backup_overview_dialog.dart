@@ -68,26 +68,23 @@ class _BackupOverviewDialogState extends State<BackupOverviewDialog> {
               ),
             ),
             const SizedBox(height: 8),
-            RadioGroup<bool>(
+            RadioListTile<bool>(
+              title: Text(l10n.mergeStrategy),
+              subtitle: Text(l10n.mergeStrategyDesc),
+              value: true,
               groupValue: _isMerge,
               onChanged: (value) {
                 if (value != null) setState(() => _isMerge = value);
               },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  RadioListTile<bool>(
-                    title: Text(l10n.mergeStrategy),
-                    subtitle: Text(l10n.mergeStrategyDesc),
-                    value: true,
-                  ),
-                  RadioListTile<bool>(
-                    title: Text(l10n.overwriteStrategy),
-                    subtitle: Text(l10n.overwriteStrategyDesc),
-                    value: false,
-                  ),
-                ],
-              ),
+            ),
+            RadioListTile<bool>(
+              title: Text(l10n.overwriteStrategy),
+              subtitle: Text(l10n.overwriteStrategyDesc),
+              value: false,
+              groupValue: _isMerge,
+              onChanged: (value) {
+                if (value != null) setState(() => _isMerge = value);
+              },
             ),
           ],
         ),
