@@ -43,9 +43,6 @@ class _DraggableProgressBarState extends State<DraggableProgressBar> {
   /// 指针按下时的全局位置，用于计算上滑偏移。
   Offset? _pointerStartGlobal;
 
-  /// 指针按下时的本地 X，用于点击跳转。
-  double? _pointerStartLocalX;
-
   /// 视为"仅点击"的最大移动量（像素）。
   static const double _tapThreshold = 8.0;
 
@@ -63,9 +60,7 @@ class _DraggableProgressBarState extends State<DraggableProgressBar> {
   }
 
   void _onPointerDown(PointerDownEvent event) {
-    final local = _toLocal(event);
     _pointerStartGlobal = event.position;
-    _pointerStartLocalX = local.dx;
   }
 
   void _onPointerMove(PointerMoveEvent event) {
@@ -129,7 +124,6 @@ class _DraggableProgressBarState extends State<DraggableProgressBar> {
       _isCancelled = false;
       _dragValue = 0.0;
       _pointerStartGlobal = null;
-      _pointerStartLocalX = null;
     });
   }
 
