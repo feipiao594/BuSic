@@ -201,36 +201,48 @@ flutter run -d linux --debug
 
 应用内所有版本号展示（关于页面、更新检查等）均通过 `package_info_plus` 在运行时从原生层读取，**唯一真实来源是 `pubspec.yaml` 的 `version` 字段**。禁止在代码中硬编码版本号。
 
-### 8.3 发布流程
+### 8.3 发布流程（自动化 CI/CD）
 
-1. **更新版本号**：修改 `pubspec.yaml` 中的 `version` 字段。
+项目通过 `.github/workflows/` 下的两个工作流实现完全自动化发布，**无需手动构建**。
+
+#### 触发链路
+
+```
+推送 v* tag
+  └─► CI (ci.yml)          — 代码分析 + 单元测试
+        └─► Release (release.yml) — 构建全平台产物 + 发布 GitHub Release
+```
+
+- `ci.yml`：在推送至 `main` 分支或任意 `v*` tag 时触发，运行 `flutter analyze` 和 `flutter test`。
+- `release.yml`：监听 CI workflow 完成事件（`workflow_run`），当 CI 成功且触发来源以 `v` 开头时，自动构建 Linux / Windows / macOS / Android / iOS 产物并发布到 GitHub Releases。
+
+#### 操作步骤
+
+1. **更新版本号**：修改 `pubspec.yaml` 中的 `version` 字段，**同步递增 build 号**。
    ```yaml
-   version: 0.3.0+4   # ← 按规范递增
+   version: 0.3.0+5   # semver+build，两者同步递增
    ```
-2. **提交版本变更**：
+2. **提交所有变更**（版本号变更随功能 commit 一起提交，或单独提交均可）：
    ```bash
-   git add pubspec.yaml
-   git commit -m "chore: bump version to 0.3.0+4"
+   git add -A
+   git commit -m "v0.3.0: <一行变更摘要>"
    ```
-3. **打 Git Tag**（标签名 = 版本号，加 `v` 前缀）：
+3. **打 Git Tag**：**tag 名仅含 semver 部分，不含 build 号**，加 `v` 前缀：
    ```bash
-   git tag v0.3.0+4
+   git tag v0.3.0          # ✅ 正确：只用 semver
+   # git tag v0.3.0+5     # ❌ 错误：不要带 build 号
+   ```
+4. **推送 commit + tag**：
+   ```bash
    git push origin main --tags
    ```
-4. **构建发布包**（参考 [构建指南](build-guide.md)）：
-   ```bash
-   # Linux release
-   flutter build linux --release
+   推送后 CI 立即启动；CI 通过后 Release 自动发布，无需任何手动操作。
 
-   # Android APK
-   flutter build apk --release
+5. **确认发布**：在 GitHub Actions 页面确认两个 workflow 均成功；GitHub Releases 页面会自动获得包含全平台产物的新发布。
 
-   # Android App Bundle
-   flutter build appbundle --release
-   ```
-5. **在 GitHub Release 中创建发布**，关联对应 Tag，附上构建产物和 changelog。
-
-> ⚠️ Tag 名称必须与 `pubspec.yaml` 中 `version` 一致（加 `v` 前缀），例如版本 `0.3.0+4` 对应 tag `v0.3.0+4`。
+> ⚠️ **Tag 格式规则**：tag 名为 `v<major>.<minor>.<patch>`，仅含 semver，不含 build 号。例如 `pubspec.yaml` 中 `version: 0.3.0+5`，对应 tag 为 `v0.3.0`。
+>
+> ⚠️ **CI 必须通过**：Release 工作流依赖 CI 成功才会触发。如果 CI 失败（analyze/test 不通过），Release **不会**发布。推 tag 前务必确保本地 `flutter analyze --no-fatal-infos` 无报错。
 
 ---
 
@@ -282,3 +294,4 @@ lib/features/new_feature/
 | [LLM/data-layer.md](LLM/data-layer.md) | 数据层参考 |
 | [LLM/state-management.md](LLM/state-management.md) | 状态管理参考 |
 | [LLM/ui.md](LLM/ui.md) | UI 层参考 |
+| [LLM/device-testing.md](LLM/device-testing.md) | LLM Agent 真机/模拟器交互测试流程 |
