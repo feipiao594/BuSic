@@ -4,7 +4,6 @@
 
 BuSic is a cross-platform Bilibili music player built with Flutter. It supports online streaming and offline download of audio from Bilibili videos, with quality selection, playlist management, and background playback. Target platforms: Linux, Windows, macOS, Android, iOS.
 
-- **Version**: 0.1.1+2
 - **License**: GPLv3
 - **Language**: Dart 3.x / Flutter 3.16+
 - **Minimum SDK**: Dart >=3.2.0, Flutter >=3.16.0
