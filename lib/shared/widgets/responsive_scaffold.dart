@@ -196,10 +196,10 @@ class _DesktopTitleBar extends StatelessWidget {
               },
               colorScheme: colorScheme,
             ),
-            // Close
+            // Close (hide to tray)
             _WindowButton(
               icon: Icons.close,
-              onPressed: () => windowManager.close(),
+              onPressed: () => windowManager.hide(),
               colorScheme: colorScheme,
               isClose: true,
             ),

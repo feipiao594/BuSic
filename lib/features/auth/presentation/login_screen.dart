@@ -174,7 +174,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             ),
             IconButton(
               icon: const Icon(Icons.close, size: 18),
-              onPressed: () => windowManager.close(),
+              onPressed: () => windowManager.hide(),
             ),
           ],
         ],

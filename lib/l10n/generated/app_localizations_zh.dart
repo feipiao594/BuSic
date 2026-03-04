@@ -225,6 +225,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get paused => '已暂停';
 
   @override
+  String get showWindow => '显示 BuSic';
+
+  @override
+  String get quitApp => '退出';
+
+  @override
   String get sharePlaylist => '分享歌单';
 
   @override

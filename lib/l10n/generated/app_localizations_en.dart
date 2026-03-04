@@ -225,6 +225,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paused => 'Paused';
 
   @override
+  String get showWindow => 'Show BuSic';
+
+  @override
+  String get quitApp => 'Quit';
+
+  @override
   String get sharePlaylist => 'Share Playlist';
 
   @override

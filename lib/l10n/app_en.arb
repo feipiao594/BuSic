@@ -73,6 +73,8 @@
   "confirm": "Confirm",
   "logoutConfirm": "Are you sure you want to logout?",
   "paused": "Paused",
+  "showWindow": "Show BuSic",
+  "quitApp": "Quit",
   "sharePlaylist": "Share Playlist",
   "copyToClipboard": "Copy to Clipboard",
   "offlineShare": "Offline Share",

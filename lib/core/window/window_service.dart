@@ -5,11 +5,12 @@ import '../utils/platform_utils.dart';
 
 /// Desktop window management service.
 ///
-/// Handles window initialization, sizing, and title bar configuration
-/// for desktop platforms (Windows, macOS, Linux).
+/// Handles window initialization, sizing, title bar configuration,
+/// and close-to-tray behavior for desktop platforms (Windows, macOS, Linux).
 /// On mobile platforms, all methods are no-ops.
-class WindowService {
+class WindowService with WindowListener {
   WindowService._();
+  static final WindowService instance = WindowService._();
 
   /// Initialize the desktop window with default size and properties.
   ///
@@ -30,9 +31,22 @@ class WindowService {
     );
 
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      // Enable close interception — hide to tray instead of quitting
+      await windowManager.setPreventClose(true);
       await windowManager.show();
       await windowManager.focus();
     });
+
+    // Register listener for close interception
+    windowManager.addListener(instance);
+  }
+
+  // ─── WindowListener ───
+
+  @override
+  void onWindowClose() async {
+    // Hide to tray instead of really closing
+    await windowManager.hide();
   }
 
   /// Update the window title.

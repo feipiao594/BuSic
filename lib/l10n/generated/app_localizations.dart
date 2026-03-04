@@ -527,6 +527,18 @@ abstract class AppLocalizations {
   /// **'Paused'**
   String get paused;
 
+  /// No description provided for @showWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show BuSic'**
+  String get showWindow;
+
+  /// No description provided for @quitApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit'**
+  String get quitApp;
+
   /// No description provided for @sharePlaylist.
   ///
   /// In en, this message translates to:

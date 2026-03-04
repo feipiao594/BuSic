@@ -72,6 +72,8 @@
   "confirm": "确定",
   "logoutConfirm": "确定要退出登录吗？",
   "paused": "已暂停",
+  "showWindow": "显示 BuSic",
+  "quitApp": "退出",
   "sharePlaylist": "分享歌单",
   "copyToClipboard": "复制到剪贴板",
   "offlineShare": "离线分享",
