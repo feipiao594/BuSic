@@ -400,8 +400,25 @@ class PlayerNotifier extends _$PlayerNotifier with PlayerStatePersistence {
 
     final nextIndex = _getNextIndex();
     if (nextIndex == null) {
+      // Sequential mode, last track finished: stop and reset to first track.
       await _repository.stop();
-      state = state.copyWith(isPlaying: false);
+      _hasActiveMedia = false;
+      final firstTrack = state.queue.isNotEmpty ? state.queue.first : null;
+      state = state.copyWith(
+        isPlaying: false,
+        currentIndex: 0,
+        currentTrack: firstTrack,
+        position: Duration.zero,
+        duration: firstTrack?.duration ?? Duration.zero,
+      );
+      _audioHandler.updatePlaybackState(
+        playing: false,
+        position: Duration.zero,
+      );
+      if (firstTrack != null) {
+        _audioHandler.setCurrentTrack(firstTrack, duration: firstTrack.duration);
+      }
+      persistState();
       return;
     }
 
