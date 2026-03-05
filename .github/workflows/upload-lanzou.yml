@@ -1,0 +1,50 @@
+name: Update Lanzou Links
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号（如 0.3.2）'
+        required: true
+      android_url:
+        description: '蓝奏云 Android APK 链接'
+        required: false
+      android_password:
+        description: '蓝奏云 Android 提取码'
+        required: false
+      windows_url:
+        description: '蓝奏云 Windows ZIP 链接'
+        required: false
+      windows_password:
+        description: '蓝奏云 Windows 提取码'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Update manifest with Lanzou links
+        run: |
+          python3 scripts/update-lanzou.py \
+            --version "${{ github.event.inputs.version }}" \
+            --manifest versions-manifest.json \
+            --android-url "${{ github.event.inputs.android_url }}" \
+            --android-password "${{ github.event.inputs.android_password }}" \
+            --windows-url "${{ github.event.inputs.windows_url }}" \
+            --windows-password "${{ github.event.inputs.windows_password }}"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add versions-manifest.json
+          git diff --cached --quiet || \
+            git commit -m "chore: add lanzou links for v${{ github.event.inputs.version }}"
+          git push origin main

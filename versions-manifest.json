@@ -1,0 +1,27 @@
+{
+  "latest": "0.3.2",
+  "min_supported": "0.2.0",
+  "versions": [
+    {
+      "version": "0.3.2",
+      "build": 8,
+      "date": "2026-03-01",
+      "changelog": "",
+      "force_update_below": "0.2.0",
+      "assets": {
+        "android": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.2/busic-android.apk"
+        },
+        "windows": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.2/busic-windows-x64.zip"
+        },
+        "linux": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.2/busic-linux-x64.tar.gz"
+        },
+        "macos": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.2/busic-macos.zip"
+        }
+      }
+    }
+  ]
+}

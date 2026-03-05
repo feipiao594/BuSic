@@ -282,3 +282,30 @@ jobs:
             busic-android.apk
             busic-ios-unsigned.ipa
             checksums.sha256
+
+  # ───────────── 更新版本清单 ──────────────
+  update-manifest:
+    needs: [check, publish]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update versions-manifest.json
+        env:
+          TAG: ${{ needs.check.outputs.tag }}
+        run: |
+          python3 scripts/update-manifest.py \
+            --tag "$TAG" \
+            --manifest versions-manifest.json
+
+      - name: Commit and push manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add versions-manifest.json
+          git diff --cached --quiet || \
+            git commit -m "chore: update versions-manifest.json for ${{ needs.check.outputs.tag }}"
+          git push origin main
