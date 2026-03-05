@@ -163,15 +163,18 @@ storeFile=upload-keystore.jks
 **构建**：
 
 ```powershell
-flutter build apk --release
+flutter build apk --release --no-tree-shake-icons
 ```
+
+> **注意**：`--no-tree-shake-icons` 标志用于保留完整的 Material Icons 字体资源。  
+> Flutter Release 构建默认会对未直接引用的图标进行树摇优化，但应用中存在某些间接引用图标的方式，导致 Material Icons 被过度优化而在运行时显示不完全。使用此标志确保所有图标在 Release 版本中正常加载。
 
 产物位置：`build/app/outputs/flutter-apk/app-release.apk`
 
 #### 拆分 ABI 构建（可选，减小 APK 体积）
 
 ```powershell
-flutter build apk --release --split-per-abi
+flutter build apk --release --split-per-abi --no-tree-shake-icons
 ```
 
 将生成 `app-arm64-v8a-release.apk`、`app-armeabi-v7a-release.apk`、`app-x86_64-release.apk` 三个 APK。
