@@ -84,22 +84,22 @@ class SettingsScreen extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.palette_outlined),
-            title: const Text('配色方案'),
+            title: Text(l10n.colorScheme),
             subtitle: Wrap(
               spacing: 8,
               runSpacing: 4,
               children: [
-                for (final entry in const {
-                  0xFF4CAF50: '绿色',
-                  0xFF2196F3: '蓝色',
-                  0xFF009688: '青色',
-                  0xFFE91E63: '粉色',
-                  0xFF9C27B0: '紫色',
-                  0xFF3F51B5: '靛蓝',
-                  0xFFFBC02D: '黄色',
-                  0xFFFF9800: '橙色',
-                  0xFFF44336: '红色',
-                  0xFF00BCD4: '蓝绿',
+                for (final entry in {
+                  0xFF4CAF50: l10n.colorGreen,
+                  0xFF2196F3: l10n.colorBlue,
+                  0xFF009688: l10n.colorTeal,
+                  0xFFE91E63: l10n.colorPink,
+                  0xFF9C27B0: l10n.colorPurple,
+                  0xFF3F51B5: l10n.colorIndigo,
+                  0xFFFBC02D: l10n.colorYellow,
+                  0xFFFF9800: l10n.colorOrange,
+                  0xFFF44336: l10n.colorRed,
+                  0xFF00BCD4: l10n.colorCyan,
                 }.entries)
                   ChoiceChip(
                     label: Text(entry.value),

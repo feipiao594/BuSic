@@ -285,5 +285,16 @@
     }
   },
   "loginToLike": "Login to like",
-  "loginToReply": "Login to reply"
+  "loginToReply": "Login to reply",
+  "colorScheme": "Color Scheme",
+  "colorGreen": "Green",
+  "colorBlue": "Blue",
+  "colorTeal": "Teal",
+  "colorPink": "Pink",
+  "colorPurple": "Purple",
+  "colorIndigo": "Indigo",
+  "colorYellow": "Yellow",
+  "colorOrange": "Orange",
+  "colorRed": "Red",
+  "colorCyan": "Cyan"
 }

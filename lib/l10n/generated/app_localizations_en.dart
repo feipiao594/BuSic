@@ -633,4 +633,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginToReply => 'Login to reply';
+
+  @override
+  String get colorScheme => 'Color Scheme';
+
+  @override
+  String get colorGreen => 'Green';
+
+  @override
+  String get colorBlue => 'Blue';
+
+  @override
+  String get colorTeal => 'Teal';
+
+  @override
+  String get colorPink => 'Pink';
+
+  @override
+  String get colorPurple => 'Purple';
+
+  @override
+  String get colorIndigo => 'Indigo';
+
+  @override
+  String get colorYellow => 'Yellow';
+
+  @override
+  String get colorOrange => 'Orange';
+
+  @override
+  String get colorRed => 'Red';
+
+  @override
+  String get colorCyan => 'Cyan';
 }

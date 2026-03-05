@@ -633,4 +633,37 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get loginToReply => '登录后可回复';
+
+  @override
+  String get colorScheme => '配色方案';
+
+  @override
+  String get colorGreen => '绿色';
+
+  @override
+  String get colorBlue => '蓝色';
+
+  @override
+  String get colorTeal => '青色';
+
+  @override
+  String get colorPink => '粉色';
+
+  @override
+  String get colorPurple => '紫色';
+
+  @override
+  String get colorIndigo => '靛蓝';
+
+  @override
+  String get colorYellow => '黄色';
+
+  @override
+  String get colorOrange => '橙色';
+
+  @override
+  String get colorRed => '红色';
+
+  @override
+  String get colorCyan => '蓝绿';
 }

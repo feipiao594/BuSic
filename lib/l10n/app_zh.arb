@@ -284,5 +284,16 @@
     }
   },
   "loginToLike": "登录后可点赞",
-  "loginToReply": "登录后可回复"
+  "loginToReply": "登录后可回复",
+  "colorScheme": "配色方案",
+  "colorGreen": "绿色",
+  "colorBlue": "蓝色",
+  "colorTeal": "青色",
+  "colorPink": "粉色",
+  "colorPurple": "紫色",
+  "colorIndigo": "靛蓝",
+  "colorYellow": "黄色",
+  "colorOrange": "橙色",
+  "colorRed": "红色",
+  "colorCyan": "蓝绿"
 }

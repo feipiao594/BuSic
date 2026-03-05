@@ -357,6 +357,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       children: [
         Expanded(
           child: ListView.builder(
+            key: PageStorageKey<String>('search_results_page_$_currentPage'),
             itemCount: _searchResults.length,
             itemBuilder: (context, index) {
               final video = _searchResults[index];
