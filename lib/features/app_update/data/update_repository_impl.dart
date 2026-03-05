@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:archive/archive.dart';
@@ -41,9 +42,66 @@ class UpdateRepositoryImpl implements UpdateRepository {
             )),
         _prober = prober ?? ProxyProber();
 
+  /// Fetch pubspec.yaml by racing concurrent GET requests to all metadata
+  /// sources. The first successful response wins; others are discarded.
+  ///
+  /// This avoids the "HEAD probe succeeds but GET fails" problem — we test
+  /// with actual GET requests so the result is guaranteed to be usable.
+  Future<YamlMap> _fetchManifestYaml() async {
+    AppLogger.info(
+      'Fetching manifest (racing ${kMetadataUrls.length} sources) …',
+      tag: _kTag,
+    );
+
+    final completer = Completer<YamlMap>();
+    var failCount = 0;
+    final total = kMetadataUrls.length;
+    Object? lastError;
+
+    for (final url in kMetadataUrls) {
+      () async {
+        try {
+          final response = await _dio.get<String>(
+            url,
+            options: Options(
+              sendTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 10),
+              followRedirects: true,
+              validateStatus: (status) => status != null && status < 400,
+            ),
+          );
+          final body = response.data;
+          if (body == null || body.trim().isEmpty) {
+            throw const FormatException('Manifest response is empty');
+          }
+          if (!completer.isCompleted) {
+            AppLogger.info('Manifest fetched from $url', tag: _kTag);
+            completer.complete(loadYaml(body) as YamlMap);
+          }
+        } catch (e) {
+          AppLogger.warning(
+            'Manifest fetch failed for $url: $e',
+            tag: _kTag,
+          );
+          lastError = e;
+          failCount++;
+          if (failCount >= total && !completer.isCompleted) {
+            completer.completeError(Exception(
+              'Failed to fetch manifest from all '
+              '${kMetadataUrls.length} sources. Last error: $lastError',
+            ));
+          }
+        }
+      }();
+    }
+
+    return completer.future;
+  }
+
   @override
   Future<void> probeProxies() async {
-    await _prober.probe(kRawProxies);
+    // Only probe release proxies; metadata URLs are raced via GET in
+    // _fetchManifestYaml() so a HEAD pre-probe is unnecessary.
     await _prober.probe(
       kReleaseProxies,
       testPath: '/$_kOwner/$_kRepo/releases',
@@ -58,14 +116,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
       '${packageInfo.version}+${packageInfo.buildNumber}',
     );
 
-    // 2. Fetch remote pubspec.yaml
-    final rawProxy = await _prober.probe(kRawProxies);
-    final pubspecUrl = '$rawProxy/$_kOwner/$_kRepo/main/pubspec.yaml';
-
-    AppLogger.info('Fetching manifest: $pubspecUrl', tag: _kTag);
-
-    final pubspecResponse = await _dio.get<String>(pubspecUrl);
-    final yamlDoc = loadYaml(pubspecResponse.data!) as YamlMap;
+    // 2. Fetch remote pubspec.yaml with fallback across all metadata sources
+    final yamlDoc = await _fetchManifestYaml();
     final remoteVersionStr = yamlDoc['version'] as String;
     final remoteVersion = AppVersion.parse(remoteVersionStr);
 

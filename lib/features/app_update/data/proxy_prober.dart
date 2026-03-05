@@ -4,21 +4,28 @@ import 'package:dio/dio.dart';
 
 import '../../../core/utils/logger.dart';
 
-/// GitHub proxy endpoints for raw file access.
-const kRawProxies = [
-  'https://raw.githubusercontent.com', // direct
-  'https://ghfast.top/https://raw.githubusercontent.com',
-  'https://raw.gitmirror.com',
-  'https://fastraw.ixnic.net',
-  'https://gh-raw.bjzhk.xyz/https://raw.githubusercontent.com',
+/// Full URLs for fetching the remote pubspec.yaml (version manifest).
+///
+/// jsdelivr is the primary source (CDN, reliable in China & international).
+/// Three confirmed-working GitHub proxies as fallback.
+/// Direct raw.githubusercontent.com last (blocked in China).
+const kMetadataUrls = [
+  'https://cdn.jsdelivr.net/gh/GlowLED/BuSic@main/pubspec.yaml',
+  'https://gh-proxy.com/https://raw.githubusercontent.com/GlowLED/BuSic/main/pubspec.yaml',
+  'https://ghfast.top/https://raw.githubusercontent.com/GlowLED/BuSic/main/pubspec.yaml',
+  'https://ghproxy.net/https://raw.githubusercontent.com/GlowLED/BuSic/main/pubspec.yaml',
+  'https://raw.githubusercontent.com/GlowLED/BuSic/main/pubspec.yaml',
 ];
 
 /// GitHub proxy endpoints for release asset downloads.
+///
+/// Direct github.com first (fastest for international users).
+/// Three confirmed-working proxies for China users.
 const kReleaseProxies = [
-  'https://github.com', // direct
+  'https://github.com',
+  'https://gh-proxy.com/https://github.com',
   'https://ghfast.top/https://github.com',
-  'https://ghproxy.cc/https://github.com',
-  'https://gh-proxy.ygxz.in/https://github.com',
+  'https://ghproxy.net/https://github.com',
 ];
 
 const _kProbeTimeout = Duration(seconds: 5);
@@ -68,12 +75,12 @@ class ProxyProber {
             url,
             options: Options(
               followRedirects: true,
-              validateStatus: (s) => s != null && s < 400,
+              // Any HTTP response (even 4xx) proves the server is reachable.
+              // Only connection errors / timeouts count as failures.
+              validateStatus: (s) => s != null,
             ),
           );
-          if (response.statusCode != null &&
-              response.statusCode! < 400 &&
-              !completer.isCompleted) {
+          if (response.statusCode != null && !completer.isCompleted) {
             completer.complete(proxy);
             return;
           }

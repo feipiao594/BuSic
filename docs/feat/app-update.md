@@ -71,39 +71,43 @@ x_update:
 ### 3.1 代理列表
 
 ```dart
-/// GitHub 原始文件代理（用于获取 pubspec.yaml）
-const kRawProxies = [
-  'https://raw.githubusercontent.com',           // 直连（海外/VPN 用户）
-  'https://ghfast.top/https://raw.githubusercontent.com',
-  'https://raw.gitmirror.com',
-  'https://fastraw.ixnic.net',
-  'https://gh-raw.bjzhk.xyz/https://raw.githubusercontent.com',
+/// 元数据获取完整 URL（用于获取 pubspec.yaml 版本清单）
+/// jsdelivr CDN 首选，三个确认可用的 GitHub 代理次选，直连兜底。
+const kMetadataUrls = [
+  'https://cdn.jsdelivr.net/gh/GlowLED/BuSic@main/pubspec.yaml', // jsdelivr CDN（境内外均可）
+  'https://gh-proxy.com/https://raw.githubusercontent.com/GlowLED/BuSic/main/pubspec.yaml',
+  'https://ghfast.top/https://raw.githubusercontent.com/GlowLED/BuSic/main/pubspec.yaml',
+  'https://ghproxy.net/https://raw.githubusercontent.com/GlowLED/BuSic/main/pubspec.yaml',
+  'https://raw.githubusercontent.com/GlowLED/BuSic/main/pubspec.yaml', // 直连（境外用户）
 ];
 
 /// GitHub Release 资产代理（用于下载安装包）
 const kReleaseProxies = [
-  'https://github.com',                          // 直连
+  'https://github.com',                              // 直连（境外用户最快）
+  'https://gh-proxy.com/https://github.com',
   'https://ghfast.top/https://github.com',
-  'https://ghproxy.cc/https://github.com',
-  'https://gh-proxy.ygxz.in/https://github.com',
+  'https://ghproxy.net/https://github.com',
 ];
 ```
 
 ### 3.2 代理选择策略
 
 ```
-1. 并发请求所有代理（HEAD 请求, timeout 5s）
-2. 取首个成功响应的代理作为本次会话首选
+1. 并发请求所有候选 URL（HEAD 请求, timeout 5s）
+2. 取首个成功响应的 URL/代理作为本次会话首选
 3. 缓存结果到内存（不持久化，每次启动重新探测）
 4. 下载时若当前代理失败，自动回退到下一个代理
 ```
+
+> **注意**：`kMetadataUrls` 使用完整 URL（因 jsdelivr 路径格式与 raw.githubusercontent.com 不同），
+> `kReleaseProxies` 仍使用 base URL + 路径拼接。
 
 ### 3.3 URL 拼接规则
 
 | 用途 | URL 模板 |
 |------|---------|
-| 获取 manifest | `{rawProxy}/GlowLED/BuSic/{tag或main}/pubspec.yaml` |
-| 获取 Release 信息 | `https://api.github.com/repos/GlowLED/BuSic/releases/latest`（或代理） |
+| 获取 manifest | `kMetadataUrls` 中最快响应的完整 URL（直接使用，无需拼接） |
+| 获取 Release 信息 | `https://api.github.com/repos/GlowLED/BuSic/releases/tags/v{version}` |
 | 下载安装包 | `{releaseProxy}/GlowLED/BuSic/releases/download/v{version}/{assetName}` |
 
 ---
