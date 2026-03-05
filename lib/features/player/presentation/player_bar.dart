@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/extensions/context_extensions.dart';
+import '../../playlist/application/favorite_notifier.dart';
 import '../application/player_notifier.dart';
 import '../domain/models/play_mode.dart';
 import 'widgets/cover_image.dart';
@@ -105,192 +106,253 @@ class PlayerBar extends ConsumerWidget {
             playerState.duration.inMilliseconds
         : 0.0;
 
-    return Container(
-      height: 72,
-      decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainerHighest,
-        border: Border(
-          top: BorderSide(
-            color: context.colorScheme.outlineVariant,
-            width: 0.5,
-          ),
-        ),
-      ),
-      child: Stack(
-        children: [
-          // 可拖动进度条（覆盖顶部，扩大触控区域至 20px）
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 20,
-            child: DraggableProgressBar(
-              progress: progress,
-              duration: playerState.duration,
-              onSeek: (pos) {
-                ref.read(playerNotifierProvider.notifier).seekTo(pos);
-              },
-            ),
-          ),
-          // 内容区域
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: [
-                  // 封面
-                  GestureDetector(
-                    onTap: () => context.push(AppRoutes.player),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: buildCoverImage(context, track.coverUrl),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // 标题、作者、歌单
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => context.push(AppRoutes.player),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            track.title,
-                            style: context.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            [
-                              track.artist,
-                              if (playerState.playlistName != null)
-                                playerState.playlistName!,
-                            ].join(' · '),
-                            style: context.textTheme.bodySmall?.copyWith(
-                              color: context.colorScheme.onSurfaceVariant,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // 音质标签
-                  if (track.quality > 0)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: context.colorScheme.tertiaryContainer,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          _qualityLabel(track.quality),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: context.colorScheme.onTertiaryContainer,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                  // 时间显示（仅桌面端）
-                  if (context.isDesktop)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Text(
-                        '${Formatters.formatDuration(playerState.position)} / ${Formatters.formatDuration(playerState.duration)}',
-                        style: context.textTheme.labelSmall?.copyWith(
-                          color: context.colorScheme.onSurfaceVariant,
-                          fontFeatures: [const FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ),
-                  // 播放模式按钮
-                  IconButton(
-                    icon: Icon(
-                      _playModeIcon(playerState.playMode),
-                      size: 20,
-                      color: context.colorScheme.onSurfaceVariant,
-                    ),
-                    tooltip: _playModeLabel(playerState.playMode),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () {
-                      final next = _nextMode(playerState.playMode);
-                      ref.read(playerNotifierProvider.notifier).setMode(next);
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(_playModeLabel(next)),
-                          duration: const Duration(seconds: 1),
-                          behavior: SnackBarBehavior.floating,
-                          margin: const EdgeInsets.only(
-                              bottom: 80, left: 16, right: 16),
-                        ),
-                      );
-                    },
-                  ),
-                  // 音量按钮（仅桌面端）
-                  if (context.isDesktop)
-                    VolumeButton(
-                      volume: playerState.volume,
-                      onChanged: (v) {
-                        ref.read(playerNotifierProvider.notifier).setVolume(v);
-                      },
-                    ),
-                  // 上一首
-                  IconButton(
-                    icon: const Icon(Icons.skip_previous, size: 24),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () {
-                      ref.read(playerNotifierProvider.notifier).previous();
-                    },
-                  ),
-                  // 播放/暂停
-                  IconButton(
-                    icon: Icon(
-                      playerState.isPlaying
-                          ? Icons.pause_circle_filled
-                          : Icons.play_circle_filled,
-                      size: 36,
-                      color: context.colorScheme.primary,
-                    ),
-                    onPressed: () {
-                      final notifier =
-                          ref.read(playerNotifierProvider.notifier);
-                      if (playerState.isPlaying) {
-                        notifier.pause();
-                      } else {
-                        notifier.resume();
-                      }
-                    },
-                  ),
-                  // 下一首
-                  IconButton(
-                    icon: const Icon(Icons.skip_next, size: 24),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () {
-                      ref.read(playerNotifierProvider.notifier).next();
-                    },
-                  ),
-                ],
+    // 收藏状态
+    final favState = ref.watch(favoriteNotifierProvider);
+    final isFavorited =
+        track.songId > 0 && (favState.value?.contains(track.songId) ?? false);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 480;
+
+        return Container(
+          height: 72,
+          decoration: BoxDecoration(
+            color: context.colorScheme.surfaceContainerHighest,
+            border: Border(
+              top: BorderSide(
+                color: context.colorScheme.outlineVariant,
+                width: 0.5,
               ),
             ),
           ),
-        ],
-      ),
+          child: Stack(
+            children: [
+              // 可拖动进度条（覆盖顶部，扩大触控区域至 20px）
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 20,
+                child: DraggableProgressBar(
+                  progress: progress,
+                  duration: playerState.duration,
+                  onSeek: (pos) {
+                    ref.read(playerNotifierProvider.notifier).seekTo(pos);
+                  },
+                ),
+              ),
+              // 内容区域
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    children: [
+                      // 封面
+                      GestureDetector(
+                        onTap: () => context.push(AppRoutes.player),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: buildCoverImage(context, track.coverUrl),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // 标题、作者、歌单
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => context.push(AppRoutes.player),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                track.title,
+                                style: context.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                [
+                                  track.artist,
+                                  if (playerState.playlistName != null)
+                                    playerState.playlistName!,
+                                ].join(' · '),
+                                style: context.textTheme.bodySmall?.copyWith(
+                                  color: context.colorScheme.onSurfaceVariant,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // ── 宽屏独有：音质标签、时间 ──
+                      if (!isCompact) ...[
+                        // 音质标签
+                        if (track.quality > 0)
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 4),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: context.colorScheme.tertiaryContainer,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                _qualityLabel(track.quality),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color:
+                                      context.colorScheme.onTertiaryContainer,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        // 时间显示（仅桌面端）
+                        if (context.isDesktop)
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 4),
+                            child: Text(
+                              '${Formatters.formatDuration(playerState.position)} / ${Formatters.formatDuration(playerState.duration)}',
+                              style: context.textTheme.labelSmall?.copyWith(
+                                color: context.colorScheme.onSurfaceVariant,
+                                fontFeatures: [
+                                  const FontFeature.tabularFigures()
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                      // ❤️ 收藏按钮
+                      IconButton(
+                        icon: Icon(
+                          isFavorited
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          size: 20,
+                          color: isFavorited
+                              ? Colors.redAccent
+                              : context.colorScheme.onSurfaceVariant,
+                        ),
+                        tooltip: isFavorited
+                            ? context.l10n.removeFromFavorites
+                            : context.l10n.addToFavorites,
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () async {
+                          if (track.songId > 0) {
+                            ref
+                                .read(
+                                    favoriteNotifierProvider.notifier)
+                                .toggleFavorite(track.songId);
+                          } else {
+                            final newId = await ref
+                                .read(
+                                    favoriteNotifierProvider.notifier)
+                                .favoriteFromTrack(track);
+                            ref
+                                .read(
+                                    playerNotifierProvider.notifier)
+                                .updateCurrentTrackSongId(newId);
+                          }
+                        },
+                      ),
+                      // ── 宽屏独有：播放模式、音量 ──
+                      if (!isCompact) ...[
+                        // 播放模式按钮
+                        IconButton(
+                          icon: Icon(
+                            _playModeIcon(playerState.playMode),
+                            size: 20,
+                            color: context.colorScheme.onSurfaceVariant,
+                          ),
+                          tooltip: _playModeLabel(playerState.playMode),
+                          visualDensity: VisualDensity.compact,
+                          onPressed: () {
+                            final next = _nextMode(playerState.playMode);
+                            ref
+                                .read(playerNotifierProvider.notifier)
+                                .setMode(next);
+                            ScaffoldMessenger.of(context).clearSnackBars();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(_playModeLabel(next)),
+                                duration: const Duration(seconds: 1),
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.only(
+                                    bottom: 80, left: 16, right: 16),
+                              ),
+                            );
+                          },
+                        ),
+                        // 音量按钮（仅桌面端）
+                        if (context.isDesktop)
+                          VolumeButton(
+                            volume: playerState.volume,
+                            onChanged: (v) {
+                              ref
+                                  .read(playerNotifierProvider.notifier)
+                                  .setVolume(v);
+                            },
+                          ),
+                      ],
+                      // 上一首
+                      IconButton(
+                        icon: const Icon(Icons.skip_previous, size: 24),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () {
+                          ref
+                              .read(playerNotifierProvider.notifier)
+                              .previous();
+                        },
+                      ),
+                      // 播放/暂停
+                      IconButton(
+                        icon: Icon(
+                          playerState.isPlaying
+                              ? Icons.pause_circle_filled
+                              : Icons.play_circle_filled,
+                          size: 36,
+                          color: context.colorScheme.primary,
+                        ),
+                        onPressed: () {
+                          final notifier =
+                              ref.read(playerNotifierProvider.notifier);
+                          if (playerState.isPlaying) {
+                            notifier.pause();
+                          } else {
+                            notifier.resume();
+                          }
+                        },
+                      ),
+                      // 下一首
+                      IconButton(
+                        icon: const Icon(Icons.skip_next, size: 24),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () {
+                          ref.read(playerNotifierProvider.notifier).next();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -79,9 +79,11 @@ class PlaylistTile extends StatelessWidget {
         ),
       ),
       child: Icon(
-        Icons.library_music,
+        playlist.isFavorite ? Icons.favorite : Icons.library_music,
         size: 48,
-        color: colorScheme.onPrimaryContainer.withValues(alpha: 0.5),
+        color: playlist.isFavorite
+            ? Colors.redAccent.withValues(alpha: 0.7)
+            : colorScheme.onPrimaryContainer.withValues(alpha: 0.5),
       ),
     );
   }

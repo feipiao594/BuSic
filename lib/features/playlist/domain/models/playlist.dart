@@ -19,6 +19,9 @@ class Playlist with _$Playlist {
     /// Number of songs in this playlist.
     @Default(0) int songCount,
 
+    /// Whether this is the system "My Favorites" playlist.
+    @Default(false) bool isFavorite,
+
     /// Creation timestamp.
     required DateTime createdAt,
   }) = _Playlist;

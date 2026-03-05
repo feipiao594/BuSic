@@ -14,6 +14,10 @@ class Playlists extends Table {
   /// Sort order for playlist list display.
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
 
+  /// Whether this is the system "My Favorites" playlist.
+  /// Only one playlist can have this set to true.
+  BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
+
   /// Timestamp when the playlist was created.
   DateTimeColumn get createdAt =>
       dateTime().withDefault(currentDateAndTime)();

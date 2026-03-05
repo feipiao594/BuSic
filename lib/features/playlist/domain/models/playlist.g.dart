@@ -12,6 +12,7 @@ _$PlaylistImpl _$$PlaylistImplFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       coverUrl: json['coverUrl'] as String?,
       songCount: (json['songCount'] as num?)?.toInt() ?? 0,
+      isFavorite: json['isFavorite'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
 
@@ -21,5 +22,6 @@ Map<String, dynamic> _$$PlaylistImplToJson(_$PlaylistImpl instance) =>
       'name': instance.name,
       'coverUrl': instance.coverUrl,
       'songCount': instance.songCount,
+      'isFavorite': instance.isFavorite,
       'createdAt': instance.createdAt.toIso8601String(),
     };

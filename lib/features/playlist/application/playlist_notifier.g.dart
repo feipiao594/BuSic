@@ -7,7 +7,7 @@ part of 'playlist_notifier.dart';
 // **************************************************************************
 
 String _$playlistListNotifierHash() =>
-    r'2169fa903539dd81609a34d99fd5cf72ea367ec5';
+    r'569fbec71a282df696eb3d95723988e96e9bde38';
 
 /// State notifier managing playlist list and CRUD operations.
 ///

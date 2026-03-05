@@ -13,6 +13,7 @@ import '../../player/application/player_notifier.dart';
 import '../../player/domain/models/audio_track.dart';
 import '../../player/domain/models/play_mode.dart';
 import '../../share/application/share_notifier.dart';
+import '../application/favorite_notifier.dart';
 import '../../share/presentation/widgets/share_dialog.dart';
 import '../application/playlist_notifier.dart';
 import '../domain/models/song_item.dart';
@@ -103,15 +104,29 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   Widget build(BuildContext context) {
     final songsAsync = ref.watch(playlistDetailNotifierProvider(playlistId));
     final playlistAsync = ref.watch(playlistListNotifierProvider);
+    final favState = ref.watch(favoriteNotifierProvider);
     final l10n = context.l10n;
 
+    // 加载收藏状态
+    ref.listen(playlistDetailNotifierProvider(playlistId), (prev, next) {
+      next.whenData((songs) {
+        if (songs.isNotEmpty) {
+          ref
+              .read(favoriteNotifierProvider.notifier)
+              .loadFavoriteStatus(songs.map((s) => s.id).toList());
+        }
+      });
+    });
+
     // Find playlist info from the list
-    final playlistName = playlistAsync.whenOrNull(
+    final playlist = playlistAsync.whenOrNull(
       data: (playlists) {
         final match = playlists.where((p) => p.id == playlistId);
-        return match.isNotEmpty ? match.first.name : null;
+        return match.isNotEmpty ? match.first : null;
       },
     );
+    final playlistName =
+        playlist?.isFavorite == true ? l10n.myFavorites : playlist?.name;
 
     return Scaffold(
       body: songsAsync.when(
@@ -272,6 +287,15 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                                 isCached: song.isCached,
                                 qualityLabel:
                                     song.isCached ? song.qualityLabel : null,
+                                isFavorited: favState.value
+                                        ?.contains(song.id) ??
+                                    false,
+                                onFavoritePressed: () {
+                                  ref
+                                      .read(favoriteNotifierProvider
+                                          .notifier)
+                                      .toggleFavorite(song.id);
+                                },
                                 onTap: () {
                                   if (isCurrentSong &&
                                       playerState.isPlaying) {
@@ -487,12 +511,28 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     SongItem song,
   ) {
     final l10n = context.l10n;
+    final favState = ref.read(favoriteNotifierProvider);
+    final isFav = favState.value?.contains(song.id) ?? false;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: ListView(
+          shrinkWrap: true,
           children: [
+            ListTile(
+              leading: Icon(
+                isFav ? Icons.favorite : Icons.favorite_border,
+                color: isFav ? Colors.redAccent : null,
+              ),
+              title: Text(
+                  isFav ? l10n.removeFromFavorites : l10n.addToFavorites),
+              onTap: () {
+                Navigator.pop(ctx);
+                ref
+                    .read(favoriteNotifierProvider.notifier)
+                    .toggleFavorite(song.id);
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.edit),
               title: Text(l10n.editMetadata),
@@ -835,8 +875,12 @@ class _PlaylistPickerDialog extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final playlist = filtered[index];
                         return ListTile(
-                          leading: const Icon(Icons.library_music),
-                          title: Text(playlist.name),
+                          leading: Icon(playlist.isFavorite
+                              ? Icons.favorite
+                              : Icons.library_music),
+                          title: Text(playlist.isFavorite
+                              ? l10n.myFavorites
+                              : playlist.name),
                           subtitle: Text('${playlist.songCount} 首歌曲'),
                           onTap: () =>
                               Navigator.of(context).pop(playlist.id),

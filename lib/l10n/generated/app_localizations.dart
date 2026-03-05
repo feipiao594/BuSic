@@ -419,6 +419,18 @@ abstract class AppLocalizations {
   /// **'About'**
   String get about;
 
+  /// No description provided for @followUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow Us'**
+  String get followUs;
+
+  /// No description provided for @followUsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Find us on social media'**
+  String get followUsDesc;
+
   /// No description provided for @noSongs.
   ///
   /// In en, this message translates to:
@@ -964,6 +976,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Importing playlist...'**
   String get importingPlaylist;
+
+  /// No description provided for @checkForUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get checkForUpdate;
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'New version available'**
+  String get updateAvailable;
+
+  /// No description provided for @updateChangelog.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new'**
+  String get updateChangelog;
+
+  /// No description provided for @updateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Update now'**
+  String get updateNow;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateLater;
+
+  /// No description provided for @skipThisVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this version'**
+  String get skipThisVersion;
+
+  /// No description provided for @downloadComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Download complete'**
+  String get downloadComplete;
+
+  /// No description provided for @installing.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing update...'**
+  String get installing;
+
+  /// No description provided for @upToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re up to date'**
+  String get upToDate;
+
+  /// No description provided for @updateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Update check failed'**
+  String get updateError;
+
+  /// No description provided for @forceUpdateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Required update'**
+  String get forceUpdateTitle;
+
+  /// No description provided for @forceUpdateMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This version is no longer supported. Please update to continue using BuSic.'**
+  String get forceUpdateMessage;
+
+  /// No description provided for @myFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'My Favorites'**
+  String get myFavorites;
+
+  /// No description provided for @addToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Favorites'**
+  String get addToFavorites;
+
+  /// No description provided for @removeFromFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from Favorites'**
+  String get removeFromFavorites;
+
+  /// No description provided for @addedToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to My Favorites'**
+  String get addedToFavorites;
+
+  /// No description provided for @removedFromFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from My Favorites'**
+  String get removedFromFavorites;
+
+  /// No description provided for @favoritesCannotDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'My Favorites playlist cannot be deleted'**
+  String get favoritesCannotDelete;
+
+  /// No description provided for @favoritesCannotRename.
+  ///
+  /// In en, this message translates to:
+  /// **'My Favorites playlist cannot be renamed'**
+  String get favoritesCannotRename;
+
+  /// No description provided for @createPlaylistManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Manually'**
+  String get createPlaylistManual;
+
+  /// No description provided for @createPlaylistManualDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name to create an empty playlist'**
+  String get createPlaylistManualDesc;
+
+  /// No description provided for @importFromBiliFav.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from Bilibili Favorites'**
+  String get importFromBiliFav;
+
+  /// No description provided for @importFromBiliFavDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to import from your favorite folders'**
+  String get importFromBiliFavDesc;
+
+  /// No description provided for @selectFavFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Favorite Folder'**
+  String get selectFavFolder;
+
+  /// No description provided for @loadingFavItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching favorites ({fetched}/{total})'**
+  String loadingFavItems(int fetched, int total);
+
+  /// No description provided for @favFolderEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This favorite folder is empty'**
+  String get favFolderEmpty;
+
+  /// No description provided for @importPreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Preview'**
+  String get importPreviewTitle;
+
+  /// No description provided for @importingProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing ({current}/{total})'**
+  String importingProgress(int current, int total);
+
+  /// No description provided for @pleaseLoginFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in to Bilibili first'**
+  String get pleaseLoginFirst;
+
+  /// No description provided for @biliFavSongCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} songs'**
+  String biliFavSongCount(int count);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -759,8 +759,12 @@ class _PlaylistPickerDialog extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final playlist = playlists[index];
                       return ListTile(
-                        leading: const Icon(Icons.library_music),
-                        title: Text(playlist.name),
+                        leading: Icon(playlist.isFavorite
+                            ? Icons.favorite
+                            : Icons.library_music),
+                        title: Text(playlist.isFavorite
+                            ? l10n.myFavorites
+                            : playlist.name),
                         subtitle:
                             Text('${playlist.songCount} 首歌曲'),
                         onTap: () =>

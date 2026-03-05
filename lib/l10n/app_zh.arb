@@ -54,6 +54,8 @@
   "autoCache": "自动缓存",
   "preferredQuality": "首选音质",
   "about": "关于",
+  "followUs": "关注我们",
+  "followUsDesc": "在社交媒体上找到我们",
   "noSongs": "暂无歌曲",
   "noPlayingMusic": "当前未播放音乐",
   "noPlaylists": "暂无歌单",
@@ -179,5 +181,52 @@
   "existsLocallyLabel": "本地已有",
   "metadataFetchFailed": "信息获取失败",
   "fetchMetadataError": "获取歌曲信息失败",
-  "importingPlaylist": "正在导入歌单..."
+  "importingPlaylist": "正在导入歌单...",
+  "checkForUpdate": "检查更新",
+  "updateAvailable": "发现新版本",
+  "updateChangelog": "更新内容",
+  "updateNow": "立即更新",
+  "updateLater": "稍后提醒",
+  "skipThisVersion": "跳过此版本",
+  "downloadComplete": "下载完成",
+  "installing": "正在安装更新...",
+  "upToDate": "已是最新版本",
+  "updateError": "检查更新失败",
+  "forceUpdateTitle": "必须更新",
+  "forceUpdateMessage": "当前版本已不受支持，请更新后继续使用 BuSic。",
+  "myFavorites": "我喜欢",
+  "addToFavorites": "收藏",
+  "removeFromFavorites": "取消收藏",
+  "addedToFavorites": "已添加到「我喜欢」",
+  "removedFromFavorites": "已从「我喜欢」移除",
+  "favoritesCannotDelete": "「我喜欢」歌单不可删除",
+  "favoritesCannotRename": "「我喜欢」歌单不可重命名",
+  "createPlaylistManual": "手动创建",
+  "createPlaylistManualDesc": "输入歌单名称创建空歌单",
+  "importFromBiliFav": "从 B 站收藏夹导入",
+  "importFromBiliFavDesc": "登录后选择收藏夹一键导入",
+  "selectFavFolder": "选择收藏夹",
+  "loadingFavItems": "正在拉取收藏夹内容 ({fetched}/{total})",
+  "@loadingFavItems": {
+    "placeholders": {
+      "fetched": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "favFolderEmpty": "该收藏夹暂无内容",
+  "importPreviewTitle": "导入预览",
+  "importingProgress": "正在导入 ({current}/{total})",
+  "@importingProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "pleaseLoginFirst": "请先登录 B 站账号",
+  "biliFavSongCount": "{count} 首",
+  "@biliFavSongCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

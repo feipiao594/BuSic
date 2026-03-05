@@ -29,14 +29,30 @@ class PlaylistListNotifier extends _$PlaylistListNotifier {
     return playlist;
   }
 
-  /// Delete a playlist by [id].
+  /// Delete a playlist by [id]. Favorites playlist cannot be deleted.
   Future<void> deletePlaylist(int id) async {
+    // Guard: check if this is the favorites playlist
+    final playlists = state.valueOrNull;
+    if (playlists != null) {
+      final target = playlists.where((p) => p.id == id);
+      if (target.isNotEmpty && target.first.isFavorite) {
+        return; // Cannot delete favorites playlist
+      }
+    }
     await _repository.deletePlaylist(id);
     ref.invalidateSelf();
   }
 
-  /// Rename a playlist.
+  /// Rename a playlist. Favorites playlist cannot be renamed.
   Future<void> renamePlaylist(int id, String name) async {
+    // Guard: check if this is the favorites playlist
+    final playlists = state.valueOrNull;
+    if (playlists != null) {
+      final target = playlists.where((p) => p.id == id);
+      if (target.isNotEmpty && target.first.isFavorite) {
+        return; // Cannot rename favorites playlist
+      }
+    }
     await _repository.renamePlaylist(id, name);
     ref.invalidateSelf();
   }

@@ -79,4 +79,24 @@ abstract class PlaylistRepository {
 
   /// Search songs by title or artist keyword.
   Future<List<SongItem>> searchSongs(String keyword);
+
+  // ── Favorites ─────────────────────────────────────────────────────────
+
+  /// Get or create the system "My Favorites" playlist.
+  ///
+  /// Guarantees exactly one playlist with [isFavorite] = true exists.
+  Future<Playlist> getOrCreateFavorites();
+
+  /// Toggle a song's favorite status (add to / remove from favorites).
+  ///
+  /// Returns `true` if the song is now favorited, `false` if unfavorited.
+  Future<bool> toggleFavorite(int songId);
+
+  /// Check whether a song is in the favorites playlist.
+  Future<bool> isFavorited(int songId);
+
+  /// Batch-check which songs are favorited.
+  ///
+  /// Returns the subset of [songIds] that are in the favorites playlist.
+  Future<Set<int>> getFavoritedSongIds(List<int> songIds);
 }

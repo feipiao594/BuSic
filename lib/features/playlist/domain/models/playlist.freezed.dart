@@ -32,6 +32,9 @@ mixin _$Playlist {
   /// Number of songs in this playlist.
   int get songCount => throw _privateConstructorUsedError;
 
+  /// Whether this is the system "My Favorites" playlist.
+  bool get isFavorite => throw _privateConstructorUsedError;
+
   /// Creation timestamp.
   DateTime get createdAt => throw _privateConstructorUsedError;
 
@@ -55,6 +58,7 @@ abstract class $PlaylistCopyWith<$Res> {
       String name,
       String? coverUrl,
       int songCount,
+      bool isFavorite,
       DateTime createdAt});
 }
 
@@ -77,6 +81,7 @@ class _$PlaylistCopyWithImpl<$Res, $Val extends Playlist>
     Object? name = null,
     Object? coverUrl = freezed,
     Object? songCount = null,
+    Object? isFavorite = null,
     Object? createdAt = null,
   }) {
     return _then(_value.copyWith(
@@ -96,6 +101,10 @@ class _$PlaylistCopyWithImpl<$Res, $Val extends Playlist>
           ? _value.songCount
           : songCount // ignore: cast_nullable_to_non_nullable
               as int,
+      isFavorite: null == isFavorite
+          ? _value.isFavorite
+          : isFavorite // ignore: cast_nullable_to_non_nullable
+              as bool,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -117,6 +126,7 @@ abstract class _$$PlaylistImplCopyWith<$Res>
       String name,
       String? coverUrl,
       int songCount,
+      bool isFavorite,
       DateTime createdAt});
 }
 
@@ -137,6 +147,7 @@ class __$$PlaylistImplCopyWithImpl<$Res>
     Object? name = null,
     Object? coverUrl = freezed,
     Object? songCount = null,
+    Object? isFavorite = null,
     Object? createdAt = null,
   }) {
     return _then(_$PlaylistImpl(
@@ -156,6 +167,10 @@ class __$$PlaylistImplCopyWithImpl<$Res>
           ? _value.songCount
           : songCount // ignore: cast_nullable_to_non_nullable
               as int,
+      isFavorite: null == isFavorite
+          ? _value.isFavorite
+          : isFavorite // ignore: cast_nullable_to_non_nullable
+              as bool,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -172,6 +187,7 @@ class _$PlaylistImpl implements _Playlist {
       required this.name,
       this.coverUrl,
       this.songCount = 0,
+      this.isFavorite = false,
       required this.createdAt});
 
   factory _$PlaylistImpl.fromJson(Map<String, dynamic> json) =>
@@ -194,13 +210,18 @@ class _$PlaylistImpl implements _Playlist {
   @JsonKey()
   final int songCount;
 
+  /// Whether this is the system "My Favorites" playlist.
+  @override
+  @JsonKey()
+  final bool isFavorite;
+
   /// Creation timestamp.
   @override
   final DateTime createdAt;
 
   @override
   String toString() {
-    return 'Playlist(id: $id, name: $name, coverUrl: $coverUrl, songCount: $songCount, createdAt: $createdAt)';
+    return 'Playlist(id: $id, name: $name, coverUrl: $coverUrl, songCount: $songCount, isFavorite: $isFavorite, createdAt: $createdAt)';
   }
 
   @override
@@ -214,14 +235,16 @@ class _$PlaylistImpl implements _Playlist {
                 other.coverUrl == coverUrl) &&
             (identical(other.songCount, songCount) ||
                 other.songCount == songCount) &&
+            (identical(other.isFavorite, isFavorite) ||
+                other.isFavorite == isFavorite) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, name, coverUrl, songCount, createdAt);
+  int get hashCode => Object.hash(
+      runtimeType, id, name, coverUrl, songCount, isFavorite, createdAt);
 
   /// Create a copy of Playlist
   /// with the given fields replaced by the non-null parameter values.
@@ -245,6 +268,7 @@ abstract class _Playlist implements Playlist {
       required final String name,
       final String? coverUrl,
       final int songCount,
+      final bool isFavorite,
       required final DateTime createdAt}) = _$PlaylistImpl;
 
   factory _Playlist.fromJson(Map<String, dynamic> json) =
@@ -265,6 +289,10 @@ abstract class _Playlist implements Playlist {
   /// Number of songs in this playlist.
   @override
   int get songCount;
+
+  /// Whether this is the system "My Favorites" playlist.
+  @override
+  bool get isFavorite;
 
   /// Creation timestamp.
   @override

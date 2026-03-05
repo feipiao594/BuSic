@@ -171,6 +171,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get about => '关于';
 
   @override
+  String get followUs => '关注我们';
+
+  @override
+  String get followUsDesc => '在社交媒体上找到我们';
+
+  @override
   String get noSongs => '暂无歌曲';
 
   @override
@@ -454,4 +460,100 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get importingPlaylist => '正在导入歌单...';
+
+  @override
+  String get checkForUpdate => '检查更新';
+
+  @override
+  String get updateAvailable => '发现新版本';
+
+  @override
+  String get updateChangelog => '更新内容';
+
+  @override
+  String get updateNow => '立即更新';
+
+  @override
+  String get updateLater => '稍后提醒';
+
+  @override
+  String get skipThisVersion => '跳过此版本';
+
+  @override
+  String get downloadComplete => '下载完成';
+
+  @override
+  String get installing => '正在安装更新...';
+
+  @override
+  String get upToDate => '已是最新版本';
+
+  @override
+  String get updateError => '检查更新失败';
+
+  @override
+  String get forceUpdateTitle => '必须更新';
+
+  @override
+  String get forceUpdateMessage => '当前版本已不受支持，请更新后继续使用 BuSic。';
+
+  @override
+  String get myFavorites => '我喜欢';
+
+  @override
+  String get addToFavorites => '收藏';
+
+  @override
+  String get removeFromFavorites => '取消收藏';
+
+  @override
+  String get addedToFavorites => '已添加到「我喜欢」';
+
+  @override
+  String get removedFromFavorites => '已从「我喜欢」移除';
+
+  @override
+  String get favoritesCannotDelete => '「我喜欢」歌单不可删除';
+
+  @override
+  String get favoritesCannotRename => '「我喜欢」歌单不可重命名';
+
+  @override
+  String get createPlaylistManual => '手动创建';
+
+  @override
+  String get createPlaylistManualDesc => '输入歌单名称创建空歌单';
+
+  @override
+  String get importFromBiliFav => '从 B 站收藏夹导入';
+
+  @override
+  String get importFromBiliFavDesc => '登录后选择收藏夹一键导入';
+
+  @override
+  String get selectFavFolder => '选择收藏夹';
+
+  @override
+  String loadingFavItems(int fetched, int total) {
+    return '正在拉取收藏夹内容 ($fetched/$total)';
+  }
+
+  @override
+  String get favFolderEmpty => '该收藏夹暂无内容';
+
+  @override
+  String get importPreviewTitle => '导入预览';
+
+  @override
+  String importingProgress(int current, int total) {
+    return '正在导入 ($current/$total)';
+  }
+
+  @override
+  String get pleaseLoginFirst => '请先登录 B 站账号';
+
+  @override
+  String biliFavSongCount(int count) {
+    return '$count 首';
+  }
 }

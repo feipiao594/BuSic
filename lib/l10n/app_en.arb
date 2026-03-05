@@ -55,6 +55,8 @@
   "autoCache": "Auto Cache",
   "preferredQuality": "Preferred Quality",
   "about": "About",
+  "followUs": "Follow Us",
+  "followUsDesc": "Find us on social media",
   "noSongs": "No songs yet",
   "noPlayingMusic": "No music playing",
   "noPlaylists": "No playlists yet",
@@ -180,5 +182,52 @@
   "existsLocallyLabel": "Exists locally",
   "metadataFetchFailed": "Fetch failed",
   "fetchMetadataError": "Failed to fetch song info",
-  "importingPlaylist": "Importing playlist..."
+  "importingPlaylist": "Importing playlist...",
+  "checkForUpdate": "Check for updates",
+  "updateAvailable": "New version available",
+  "updateChangelog": "What's new",
+  "updateNow": "Update now",
+  "updateLater": "Later",
+  "skipThisVersion": "Skip this version",
+  "downloadComplete": "Download complete",
+  "installing": "Installing update...",
+  "upToDate": "You're up to date",
+  "updateError": "Update check failed",
+  "forceUpdateTitle": "Required update",
+  "forceUpdateMessage": "This version is no longer supported. Please update to continue using BuSic.",
+  "myFavorites": "My Favorites",
+  "addToFavorites": "Add to Favorites",
+  "removeFromFavorites": "Remove from Favorites",
+  "addedToFavorites": "Added to My Favorites",
+  "removedFromFavorites": "Removed from My Favorites",
+  "favoritesCannotDelete": "My Favorites playlist cannot be deleted",
+  "favoritesCannotRename": "My Favorites playlist cannot be renamed",
+  "createPlaylistManual": "Create Manually",
+  "createPlaylistManualDesc": "Enter a name to create an empty playlist",
+  "importFromBiliFav": "Import from Bilibili Favorites",
+  "importFromBiliFavDesc": "Sign in to import from your favorite folders",
+  "selectFavFolder": "Select Favorite Folder",
+  "loadingFavItems": "Fetching favorites ({fetched}/{total})",
+  "@loadingFavItems": {
+    "placeholders": {
+      "fetched": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "favFolderEmpty": "This favorite folder is empty",
+  "importPreviewTitle": "Import Preview",
+  "importingProgress": "Importing ({current}/{total})",
+  "@importingProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "pleaseLoginFirst": "Please sign in to Bilibili first",
+  "biliFavSongCount": "{count} songs",
+  "@biliFavSongCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

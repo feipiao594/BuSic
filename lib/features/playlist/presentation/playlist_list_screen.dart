@@ -66,11 +66,14 @@ class PlaylistListScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final playlist = playlists[index];
               return PlaylistTile(
-                playlist: playlist,
+                playlist: playlist.isFavorite
+                    ? playlist.copyWith(name: context.l10n.myFavorites)
+                    : playlist,
                 onTap: () {
                   context.go('/playlists/${playlist.id}');
                 },
                 onLongPress: () {
+                  if (playlist.isFavorite) return;
                   _showPlaylistMenu(context, ref, playlist.id, playlist.name);
                 },
               );

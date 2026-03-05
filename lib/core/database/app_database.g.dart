@@ -665,6 +665,16 @@ class $PlaylistsTable extends Playlists
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
+  static const VerificationMeta _isFavoriteMeta =
+      const VerificationMeta('isFavorite');
+  @override
+  late final GeneratedColumn<bool> isFavorite = GeneratedColumn<bool>(
+      'is_favorite', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_favorite" IN (0, 1))'),
+      defaultValue: const Constant(false));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -675,7 +685,7 @@ class $PlaylistsTable extends Playlists
       defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, name, coverUrl, sortOrder, createdAt];
+      [id, name, coverUrl, sortOrder, isFavorite, createdAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -703,6 +713,12 @@ class $PlaylistsTable extends Playlists
       context.handle(_sortOrderMeta,
           sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta));
     }
+    if (data.containsKey('is_favorite')) {
+      context.handle(
+          _isFavoriteMeta,
+          isFavorite.isAcceptableOrUnknown(
+              data['is_favorite']!, _isFavoriteMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -724,6 +740,8 @@ class $PlaylistsTable extends Playlists
           .read(DriftSqlType.string, data['${effectivePrefix}cover_url']),
       sortOrder: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}sort_order'])!,
+      isFavorite: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_favorite'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
@@ -748,6 +766,10 @@ class Playlist extends DataClass implements Insertable<Playlist> {
   /// Sort order for playlist list display.
   final int sortOrder;
 
+  /// Whether this is the system "My Favorites" playlist.
+  /// Only one playlist can have this set to true.
+  final bool isFavorite;
+
   /// Timestamp when the playlist was created.
   final DateTime createdAt;
   const Playlist(
@@ -755,6 +777,7 @@ class Playlist extends DataClass implements Insertable<Playlist> {
       required this.name,
       this.coverUrl,
       required this.sortOrder,
+      required this.isFavorite,
       required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -765,6 +788,7 @@ class Playlist extends DataClass implements Insertable<Playlist> {
       map['cover_url'] = Variable<String>(coverUrl);
     }
     map['sort_order'] = Variable<int>(sortOrder);
+    map['is_favorite'] = Variable<bool>(isFavorite);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -777,6 +801,7 @@ class Playlist extends DataClass implements Insertable<Playlist> {
           ? const Value.absent()
           : Value(coverUrl),
       sortOrder: Value(sortOrder),
+      isFavorite: Value(isFavorite),
       createdAt: Value(createdAt),
     );
   }
@@ -789,6 +814,7 @@ class Playlist extends DataClass implements Insertable<Playlist> {
       name: serializer.fromJson<String>(json['name']),
       coverUrl: serializer.fromJson<String?>(json['coverUrl']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -800,6 +826,7 @@ class Playlist extends DataClass implements Insertable<Playlist> {
       'name': serializer.toJson<String>(name),
       'coverUrl': serializer.toJson<String?>(coverUrl),
       'sortOrder': serializer.toJson<int>(sortOrder),
+      'isFavorite': serializer.toJson<bool>(isFavorite),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -809,12 +836,14 @@ class Playlist extends DataClass implements Insertable<Playlist> {
           String? name,
           Value<String?> coverUrl = const Value.absent(),
           int? sortOrder,
+          bool? isFavorite,
           DateTime? createdAt}) =>
       Playlist(
         id: id ?? this.id,
         name: name ?? this.name,
         coverUrl: coverUrl.present ? coverUrl.value : this.coverUrl,
         sortOrder: sortOrder ?? this.sortOrder,
+        isFavorite: isFavorite ?? this.isFavorite,
         createdAt: createdAt ?? this.createdAt,
       );
   Playlist copyWithCompanion(PlaylistsCompanion data) {
@@ -823,6 +852,8 @@ class Playlist extends DataClass implements Insertable<Playlist> {
       name: data.name.present ? data.name.value : this.name,
       coverUrl: data.coverUrl.present ? data.coverUrl.value : this.coverUrl,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      isFavorite:
+          data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -834,13 +865,15 @@ class Playlist extends DataClass implements Insertable<Playlist> {
           ..write('name: $name, ')
           ..write('coverUrl: $coverUrl, ')
           ..write('sortOrder: $sortOrder, ')
+          ..write('isFavorite: $isFavorite, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, coverUrl, sortOrder, createdAt);
+  int get hashCode =>
+      Object.hash(id, name, coverUrl, sortOrder, isFavorite, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -849,6 +882,7 @@ class Playlist extends DataClass implements Insertable<Playlist> {
           other.name == this.name &&
           other.coverUrl == this.coverUrl &&
           other.sortOrder == this.sortOrder &&
+          other.isFavorite == this.isFavorite &&
           other.createdAt == this.createdAt);
 }
 
@@ -857,12 +891,14 @@ class PlaylistsCompanion extends UpdateCompanion<Playlist> {
   final Value<String> name;
   final Value<String?> coverUrl;
   final Value<int> sortOrder;
+  final Value<bool> isFavorite;
   final Value<DateTime> createdAt;
   const PlaylistsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.coverUrl = const Value.absent(),
     this.sortOrder = const Value.absent(),
+    this.isFavorite = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   PlaylistsCompanion.insert({
@@ -870,6 +906,7 @@ class PlaylistsCompanion extends UpdateCompanion<Playlist> {
     required String name,
     this.coverUrl = const Value.absent(),
     this.sortOrder = const Value.absent(),
+    this.isFavorite = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : name = Value(name);
   static Insertable<Playlist> custom({
@@ -877,6 +914,7 @@ class PlaylistsCompanion extends UpdateCompanion<Playlist> {
     Expression<String>? name,
     Expression<String>? coverUrl,
     Expression<int>? sortOrder,
+    Expression<bool>? isFavorite,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
@@ -884,6 +922,7 @@ class PlaylistsCompanion extends UpdateCompanion<Playlist> {
       if (name != null) 'name': name,
       if (coverUrl != null) 'cover_url': coverUrl,
       if (sortOrder != null) 'sort_order': sortOrder,
+      if (isFavorite != null) 'is_favorite': isFavorite,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -893,12 +932,14 @@ class PlaylistsCompanion extends UpdateCompanion<Playlist> {
       Value<String>? name,
       Value<String?>? coverUrl,
       Value<int>? sortOrder,
+      Value<bool>? isFavorite,
       Value<DateTime>? createdAt}) {
     return PlaylistsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       coverUrl: coverUrl ?? this.coverUrl,
       sortOrder: sortOrder ?? this.sortOrder,
+      isFavorite: isFavorite ?? this.isFavorite,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -918,6 +959,9 @@ class PlaylistsCompanion extends UpdateCompanion<Playlist> {
     if (sortOrder.present) {
       map['sort_order'] = Variable<int>(sortOrder.value);
     }
+    if (isFavorite.present) {
+      map['is_favorite'] = Variable<bool>(isFavorite.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -931,6 +975,7 @@ class PlaylistsCompanion extends UpdateCompanion<Playlist> {
           ..write('name: $name, ')
           ..write('coverUrl: $coverUrl, ')
           ..write('sortOrder: $sortOrder, ')
+          ..write('isFavorite: $isFavorite, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -2405,6 +2450,7 @@ typedef $$PlaylistsTableCreateCompanionBuilder = PlaylistsCompanion Function({
   required String name,
   Value<String?> coverUrl,
   Value<int> sortOrder,
+  Value<bool> isFavorite,
   Value<DateTime> createdAt,
 });
 typedef $$PlaylistsTableUpdateCompanionBuilder = PlaylistsCompanion Function({
@@ -2412,6 +2458,7 @@ typedef $$PlaylistsTableUpdateCompanionBuilder = PlaylistsCompanion Function({
   Value<String> name,
   Value<String?> coverUrl,
   Value<int> sortOrder,
+  Value<bool> isFavorite,
   Value<DateTime> createdAt,
 });
 
@@ -2455,6 +2502,9 @@ class $$PlaylistsTableFilterComposer
 
   ColumnFilters<int> get sortOrder => $composableBuilder(
       column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isFavorite => $composableBuilder(
+      column: $table.isFavorite, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -2502,6 +2552,9 @@ class $$PlaylistsTableOrderingComposer
   ColumnOrderings<int> get sortOrder => $composableBuilder(
       column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get isFavorite => $composableBuilder(
+      column: $table.isFavorite, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 }
@@ -2526,6 +2579,9 @@ class $$PlaylistsTableAnnotationComposer
 
   GeneratedColumn<int> get sortOrder =>
       $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<bool> get isFavorite => $composableBuilder(
+      column: $table.isFavorite, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -2579,6 +2635,7 @@ class $$PlaylistsTableTableManager extends RootTableManager<
             Value<String> name = const Value.absent(),
             Value<String?> coverUrl = const Value.absent(),
             Value<int> sortOrder = const Value.absent(),
+            Value<bool> isFavorite = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
           }) =>
               PlaylistsCompanion(
@@ -2586,6 +2643,7 @@ class $$PlaylistsTableTableManager extends RootTableManager<
             name: name,
             coverUrl: coverUrl,
             sortOrder: sortOrder,
+            isFavorite: isFavorite,
             createdAt: createdAt,
           ),
           createCompanionCallback: ({
@@ -2593,6 +2651,7 @@ class $$PlaylistsTableTableManager extends RootTableManager<
             required String name,
             Value<String?> coverUrl = const Value.absent(),
             Value<int> sortOrder = const Value.absent(),
+            Value<bool> isFavorite = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
           }) =>
               PlaylistsCompanion.insert(
@@ -2600,6 +2659,7 @@ class $$PlaylistsTableTableManager extends RootTableManager<
             name: name,
             coverUrl: coverUrl,
             sortOrder: sortOrder,
+            isFavorite: isFavorite,
             createdAt: createdAt,
           ),
           withReferenceMapper: (p0) => p0

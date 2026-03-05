@@ -171,6 +171,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
+  String get followUs => 'Follow Us';
+
+  @override
+  String get followUsDesc => 'Find us on social media';
+
+  @override
   String get noSongs => 'No songs yet';
 
   @override
@@ -454,4 +460,100 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importingPlaylist => 'Importing playlist...';
+
+  @override
+  String get checkForUpdate => 'Check for updates';
+
+  @override
+  String get updateAvailable => 'New version available';
+
+  @override
+  String get updateChangelog => 'What\'s new';
+
+  @override
+  String get updateNow => 'Update now';
+
+  @override
+  String get updateLater => 'Later';
+
+  @override
+  String get skipThisVersion => 'Skip this version';
+
+  @override
+  String get downloadComplete => 'Download complete';
+
+  @override
+  String get installing => 'Installing update...';
+
+  @override
+  String get upToDate => 'You\'re up to date';
+
+  @override
+  String get updateError => 'Update check failed';
+
+  @override
+  String get forceUpdateTitle => 'Required update';
+
+  @override
+  String get forceUpdateMessage => 'This version is no longer supported. Please update to continue using BuSic.';
+
+  @override
+  String get myFavorites => 'My Favorites';
+
+  @override
+  String get addToFavorites => 'Add to Favorites';
+
+  @override
+  String get removeFromFavorites => 'Remove from Favorites';
+
+  @override
+  String get addedToFavorites => 'Added to My Favorites';
+
+  @override
+  String get removedFromFavorites => 'Removed from My Favorites';
+
+  @override
+  String get favoritesCannotDelete => 'My Favorites playlist cannot be deleted';
+
+  @override
+  String get favoritesCannotRename => 'My Favorites playlist cannot be renamed';
+
+  @override
+  String get createPlaylistManual => 'Create Manually';
+
+  @override
+  String get createPlaylistManualDesc => 'Enter a name to create an empty playlist';
+
+  @override
+  String get importFromBiliFav => 'Import from Bilibili Favorites';
+
+  @override
+  String get importFromBiliFavDesc => 'Sign in to import from your favorite folders';
+
+  @override
+  String get selectFavFolder => 'Select Favorite Folder';
+
+  @override
+  String loadingFavItems(int fetched, int total) {
+    return 'Fetching favorites ($fetched/$total)';
+  }
+
+  @override
+  String get favFolderEmpty => 'This favorite folder is empty';
+
+  @override
+  String get importPreviewTitle => 'Import Preview';
+
+  @override
+  String importingProgress(int current, int total) {
+    return 'Importing ($current/$total)';
+  }
+
+  @override
+  String get pleaseLoginFirst => 'Please sign in to Bilibili first';
+
+  @override
+  String biliFavSongCount(int count) {
+    return '$count songs';
+  }
 }

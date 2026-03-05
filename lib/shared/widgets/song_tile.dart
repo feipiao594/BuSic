@@ -35,6 +35,12 @@ class SongTile extends StatelessWidget {
   /// Callback when the more/options button is tapped.
   final VoidCallback? onMorePressed;
 
+  /// Whether this song is favorited (null = don't show heart button).
+  final bool? isFavorited;
+
+  /// Callback when the favorite/heart button is tapped.
+  final VoidCallback? onFavoritePressed;
+
   const SongTile({
     super.key,
     this.coverUrl,
@@ -46,6 +52,8 @@ class SongTile extends StatelessWidget {
     this.qualityLabel,
     this.onTap,
     this.onMorePressed,
+    this.isFavorited,
+    this.onFavoritePressed,
   });
 
   @override
@@ -110,6 +118,20 @@ class SongTile extends StatelessWidget {
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
+            ),
+          // Favorite button (always visible when isFavorited is non-null)
+          if (isFavorited != null)
+            IconButton(
+              icon: Icon(
+                isFavorited! ? Icons.favorite : Icons.favorite_border,
+                color: isFavorited!
+                    ? Colors.redAccent
+                    : colorScheme.onSurfaceVariant,
+                size: 22,
+              ),
+              visualDensity: VisualDensity.compact,
+              onPressed: onFavoritePressed,
+              tooltip: isFavorited! ? '取消收藏' : '收藏',
             ),
           // Play button
           IconButton(

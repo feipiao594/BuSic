@@ -17,6 +17,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
       name: row.name,
       coverUrl: effectiveCoverUrl ?? row.coverUrl,
       songCount: songCount,
+      isFavorite: row.isFavorite,
       createdAt: row.createdAt,
     );
   }
@@ -281,5 +282,81 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
               t.customArtist.like(pattern)))
         .get();
     return rows.map(_mapSong).toList();
+  }
+
+  // ── Favorites ─────────────────────────────────────────────────────────
+
+  @override
+  Future<domain.Playlist> getOrCreateFavorites() async {
+    final row = await (_db.select(_db.playlists)
+          ..where((t) => t.isFavorite.equals(true)))
+        .getSingleOrNull();
+
+    if (row != null) {
+      final count = await (_db.selectOnly(_db.playlistSongs)
+            ..addColumns([_db.playlistSongs.songId.count()])
+            ..where(_db.playlistSongs.playlistId.equals(row.id)))
+          .map((r) => r.read(_db.playlistSongs.songId.count()))
+          .getSingle();
+      final effectiveCoverUrl =
+          row.coverUrl ?? await _getFirstSongCover(row.id);
+      return _mapPlaylist(
+        row,
+        songCount: count ?? 0,
+        effectiveCoverUrl: effectiveCoverUrl,
+      );
+    }
+
+    // First time — create the system favorites playlist.
+    final id = await _db.into(_db.playlists).insert(
+          PlaylistsCompanion.insert(
+            name: '@@favorites@@',
+            isFavorite: const Value(true),
+            sortOrder: const Value(-1),
+          ),
+        );
+    return domain.Playlist(
+      id: id,
+      name: '@@favorites@@',
+      songCount: 0,
+      isFavorite: true,
+      createdAt: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<bool> toggleFavorite(int songId) async {
+    final favPlaylist = await getOrCreateFavorites();
+    final exists = await isFavorited(songId);
+    if (exists) {
+      await removeSongFromPlaylist(favPlaylist.id, songId);
+      return false;
+    } else {
+      await addSongToPlaylist(favPlaylist.id, songId);
+      return true;
+    }
+  }
+
+  @override
+  Future<bool> isFavorited(int songId) async {
+    final favPlaylist = await getOrCreateFavorites();
+    final row = await (_db.select(_db.playlistSongs)
+          ..where((t) =>
+              t.playlistId.equals(favPlaylist.id) &
+              t.songId.equals(songId)))
+        .getSingleOrNull();
+    return row != null;
+  }
+
+  @override
+  Future<Set<int>> getFavoritedSongIds(List<int> songIds) async {
+    if (songIds.isEmpty) return {};
+    final favPlaylist = await getOrCreateFavorites();
+    final rows = await (_db.select(_db.playlistSongs)
+          ..where((t) =>
+              t.playlistId.equals(favPlaylist.id) &
+              t.songId.isIn(songIds)))
+        .get();
+    return rows.map((r) => r.songId).toSet();
   }
 }

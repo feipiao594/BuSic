@@ -601,6 +601,21 @@ class PlayerNotifier extends _$PlayerNotifier {
     state = state.copyWith(volume: volume);
   }
 
+  /// Update the songId of the current track and its queue entry.
+  ///
+  /// Called after a track with `songId == 0` is persisted to the database.
+  void updateCurrentTrackSongId(int newSongId) {
+    final track = state.currentTrack;
+    if (track == null) return;
+    final updated = track.copyWith(songId: newSongId);
+    final newQueue = List<AudioTrack>.from(state.queue);
+    if (state.currentIndex < newQueue.length) {
+      newQueue[state.currentIndex] = updated;
+    }
+    state = state.copyWith(queue: newQueue, currentTrack: updated);
+    _persistState();
+  }
+
   /// Add a track to the end of the queue.
   void addToQueue(AudioTrack track) {
     state = state.copyWith(queue: [...state.queue, track]);
