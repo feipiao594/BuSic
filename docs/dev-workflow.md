@@ -201,11 +201,30 @@ flutter run -d linux --debug
 
 应用内所有版本号展示（关于页面、更新检查等）均通过 `package_info_plus` 在运行时从原生层读取，**唯一真实来源是 `pubspec.yaml` 的 `version` 字段**。禁止在代码中硬编码版本号。
 
-### 8.3 发布流程（自动化 CI/CD）
+### 8.3 发布流程（CLI 引导 + CI/CD）
 
-项目通过 `.github/workflows/` 下的两个工作流实现完全自动化发布，**无需手动构建**。
+推荐通过 **发布 CLI** 完成整个发布流程：
 
-#### 触发链路
+```bash
+python3 scripts/release.py
+```
+
+CLI 会引导你完成以下 7 个步骤：
+
+#### 流程概览
+
+```
+release.py 引导 →
+  1. 前置检查（Git 分支 / 工作区状态）
+  2. 设置版本号（自动更新 pubspec.yaml）
+  3. 静态分析（flutter analyze）
+  4. 本地构建（Android APK + Windows ZIP）
+  5. 蓝奏云发布（可选，手动上传后录入链接）
+  6. 更新 versions-manifest.json
+  7. Git commit + tag + push → 触发 CI/CD
+```
+
+#### GitHub CI/CD 触发链路
 
 ```
 推送 v* tag
@@ -216,29 +235,18 @@ flutter run -d linux --debug
 - `ci.yml`：在推送至 `main` 分支或任意 `v*` tag 时触发，运行 `flutter analyze` 和 `flutter test`。
 - `release.yml`：监听 CI workflow 完成事件（`workflow_run`），当 CI 成功且触发来源以 `v` 开头时，自动构建 Linux / Windows / macOS / Android / iOS 产物并发布到 GitHub Releases。
 
-#### 操作步骤
+#### 手动操作（不使用 CLI 时）
 
 1. **更新版本号**：修改 `pubspec.yaml` 中的 `version` 字段，**同步递增 build 号**。
-   ```yaml
-   version: 0.3.0+5   # semver+build，两者同步递增
-   ```
-2. **提交所有变更**（版本号变更随功能 commit 一起提交，或单独提交均可）：
+2. **本地构建**：`flutter build apk --release` + `flutter build windows --release`
+3. **（可选）上传蓝奏云**：手动上传构建产物，获取分享链接和提取码。
+4. **更新 manifest**：编辑 `versions-manifest.json`，添加新版本条目（含 GitHub 链接 + 可选蓝奏云链接）。
+5. **提交 + 打 Tag + 推送**：
    ```bash
-   git add -A
-   git commit -m "v0.3.0: <一行变更摘要>"
-   ```
-3. **打 Git Tag**：**tag 名仅含 semver 部分，不含 build 号**，加 `v` 前缀：
-   ```bash
-   git tag v0.3.0          # ✅ 正确：只用 semver
-   # git tag v0.3.0+5     # ❌ 错误：不要带 build 号
-   ```
-4. **推送 commit + tag**：
-   ```bash
+   git add -A && git commit -m "v0.3.0"
+   git tag v0.3.0          # tag 名仅含 semver，不含 build 号
    git push origin main --tags
    ```
-   推送后 CI 立即启动；CI 通过后 Release 自动发布，无需任何手动操作。
-
-5. **确认发布**：在 GitHub Actions 页面确认两个 workflow 均成功；GitHub Releases 页面会自动获得包含全平台产物的新发布。
 
 > ⚠️ **Tag 格式规则**：tag 名为 `v<major>.<minor>.<patch>`，仅含 semver，不含 build 号。例如 `pubspec.yaml` 中 `version: 0.3.0+5`，对应 tag 为 `v0.3.0`。
 >
