@@ -1,17 +1,16 @@
-import 'dart:io';
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/utils/formatters.dart';
 import '../../../shared/extensions/context_extensions.dart';
 import '../../comment/presentation/comment_section.dart';
-import '../../playlist/application/favorite_notifier.dart';
+import '../../subtitle/presentation/widgets/lyrics_panel.dart';
 import '../application/player_notifier.dart';
-import '../domain/models/play_mode.dart';
-import 'widgets/play_queue_sheet.dart';
+import 'widgets/cover_image.dart';
+import 'widgets/player_app_bar.dart';
+import 'widgets/player_controls.dart';
+import 'widgets/player_seek_bar.dart';
 
 /// Full-screen player view with large cover art, comments, and controls.
 ///
@@ -24,16 +23,23 @@ class FullPlayerScreen extends ConsumerStatefulWidget {
 }
 
 class _FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
-  /// Non-null while the user is dragging the seek bar.
-  double? _dragValue;
-
-  /// Page controller for cover ↔ comments switching.
+  /// Page controller for cover ↔ comments switching (horizontal, portrait).
   final _pageController = PageController();
   int _currentPageIndex = 0;
+
+  /// Page controller for cover ↔ lyrics switching (vertical, portrait).
+  final _verticalPageController = PageController();
+  int _verticalPageIndex = 0;
+
+  /// Page controller for right-panel content in wide layout.
+  final _wideRightPageController = PageController();
+  int _wideRightPageIndex = 0;
 
   @override
   void dispose() {
     _pageController.dispose();
+    _verticalPageController.dispose();
+    _wideRightPageController.dispose();
     super.dispose();
   }
 
@@ -41,7 +47,6 @@ class _FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
   Widget build(BuildContext context) {
     final playerState = ref.watch(playerNotifierProvider);
     final track = playerState.currentTrack;
-    final l10n = context.l10n;
     final screenSize = MediaQuery.sizeOf(context);
     final isWide = screenSize.width > screenSize.height;
 
@@ -53,312 +58,67 @@ class _FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
           if (track?.coverUrl != null)
             ImageFiltered(
               imageFilter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
-              child: _buildBackgroundCover(track!.coverUrl!),
+              child: _buildBackground(track!.coverUrl!),
             ),
 
           // Content
           SafeArea(
-            child: isWide
-                ? _buildWideLayout()
-                : Column(
-              children: [
-                // App bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.keyboard_arrow_down,
-                            color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const Spacer(),
-                      // ❤️ 收藏按钮
-                      if (track != null)
-                        Builder(
-                          builder: (context) {
-                            final favState =
-                                ref.watch(favoriteNotifierProvider);
-                            final isFav = favState.value
-                                    ?.contains(track.songId) ??
-                                false;
-                            return IconButton(
-                              icon: Icon(
-                                isFav
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: isFav
-                                    ? Colors.redAccent
-                                    : Colors.white,
-                              ),
-                              tooltip: isFav
-                                  ? l10n.removeFromFavorites
-                                  : l10n.addToFavorites,
-                              onPressed: () async {
-                                if (track.songId > 0) {
-                                  ref
-                                      .read(favoriteNotifierProvider
-                                          .notifier)
-                                      .toggleFavorite(track.songId);
-                                } else {
-                                  final newId = await ref
-                                      .read(favoriteNotifierProvider
-                                          .notifier)
-                                      .favoriteFromTrack(track);
-                                  ref
-                                      .read(playerNotifierProvider
-                                          .notifier)
-                                      .updateCurrentTrackSongId(newId);
-                                }
-                              },
-                            );
-                          },
-                        ),
-                      IconButton(
-                        icon:
-                            const Icon(Icons.queue_music, color: Colors.white),
-                        tooltip: l10n.queue,
-                        onPressed: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (_) => const PlayQueueSheet(),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-
-                // ── PageView: Cover Art ↔ Comments ──
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: (index) {
-                      setState(() => _currentPageIndex = index);
-                    },
-                    children: [
-                      // Page 0: Cover art + title
-                      _buildCoverPage(context, track, l10n),
-
-                      // Page 1: Comments
-                      if (track != null)
-                        _buildCommentPage(context, track.bvid)
-                      else
-                        Center(
-                          child: Text(
-                            l10n.noPlayingMusic,
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-
-                // Page indicator
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildDot(0),
-                      const SizedBox(width: 8),
-                      _buildDot(1),
-                    ],
-                  ),
-                ),
-
-                // Seek bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          trackHeight: 3,
-                          thumbShape: const RoundSliderThumbShape(
-                              enabledThumbRadius: 6),
-                          overlayShape: const RoundSliderOverlayShape(
-                              overlayRadius: 14),
-                          activeTrackColor: Colors.white,
-                          inactiveTrackColor: Colors.white24,
-                          thumbColor: Colors.white,
-                        ),
-                        child: Slider(
-                          value: _dragValue ??
-                              (playerState.duration.inMilliseconds > 0
-                              ? playerState.position.inMilliseconds
-                                  .toDouble()
-                                  .clamp(
-                                      0,
-                                      playerState.duration.inMilliseconds
-                                          .toDouble())
-                              : 0),
-                          max: playerState.duration.inMilliseconds > 0
-                              ? playerState.duration.inMilliseconds.toDouble()
-                              : 1,
-                          onChangeStart: (value) {
-                            setState(() => _dragValue = value);
-                          },
-                          onChanged: (value) {
-                            setState(() => _dragValue = value);
-                          },
-                          onChangeEnd: (value) {
-                            ref
-                                .read(playerNotifierProvider.notifier)
-                                .seekTo(Duration(milliseconds: value.toInt()));
-                            setState(() => _dragValue = null);
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              Formatters.formatDuration(
-                                  _dragValue != null
-                                      ? Duration(milliseconds: _dragValue!.toInt())
-                                      : playerState.position),
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 12),
-                            ),
-                            Text(
-                              Formatters.formatDuration(
-                                  playerState.duration),
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // Controls（响应式布局）
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isNarrow = constraints.maxWidth < 400;
-
-                    final modeBtn = IconButton(
-                      icon: Icon(
-                        _modeIcon(playerState.playMode),
-                        color: Colors.white70,
-                      ),
-                      onPressed: () {
-                        const modes = PlayMode.values;
-                        final next =
-                            (playerState.playMode.index + 1) % modes.length;
-                        ref
-                            .read(playerNotifierProvider.notifier)
-                            .setMode(modes[next]);
-                      },
-                    );
-                    final prevBtn = IconButton(
-                      icon: const Icon(Icons.skip_previous,
-                          color: Colors.white, size: 36),
-                      onPressed: () {
-                        ref.read(playerNotifierProvider.notifier).previous();
-                      },
-                    );
-                    final playPauseBtn = Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        iconSize: 40,
-                        icon: Icon(
-                          playerState.isPlaying
-                              ? Icons.pause
-                              : Icons.play_arrow,
-                          color: Colors.black87,
-                        ),
-                        onPressed: () {
-                          final notifier =
-                              ref.read(playerNotifierProvider.notifier);
-                          if (playerState.isPlaying) {
-                            notifier.pause();
-                          } else {
-                            notifier.resume();
-                          }
-                        },
-                      ),
-                    );
-                    final nextBtn = IconButton(
-                      icon: const Icon(Icons.skip_next,
-                          color: Colors.white, size: 36),
-                      onPressed: () {
-                        ref.read(playerNotifierProvider.notifier).next();
-                      },
-                    );
-                    final volumeBtn = IconButton(
-                      icon: const Icon(Icons.volume_up,
-                          color: Colors.white70),
-                      onPressed: () => _showVolumeSheet(context, ref),
-                    );
-
-                    if (isNarrow) {
-                      return Padding(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 24),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceEvenly,
-                              children: [
-                                prevBtn,
-                                playPauseBtn,
-                                nextBtn,
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceEvenly,
-                              children: [
-                                modeBtn,
-                                volumeBtn,
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    return Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 24),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          modeBtn,
-                          prevBtn,
-                          playPauseBtn,
-                          nextBtn,
-                          volumeBtn,
-                        ],
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 32),
-              ],
-            ),
+            child: isWide ? _buildWideLayout() : _buildPortraitLayout(),
           ),
         ],
       ),
     );
   }
 
-  /// Wide-screen layout: cover on the left, controls on the right.
+  // ── Portrait layout ──────────────────────────────────────────────
+
+  Widget _buildPortraitLayout() {
+    final playerState = ref.watch(playerNotifierProvider);
+    final track = playerState.currentTrack;
+
+    return Column(
+      children: [
+        PlayerAppBar(track: track),
+
+        // Vertical PageView: [Cover+Comments, Lyrics]
+        Expanded(
+          child: PageView(
+            controller: _verticalPageController,
+            scrollDirection: Axis.vertical,
+            physics: const ClampingScrollPhysics(),
+            onPageChanged: (i) =>
+                setState(() => _verticalPageIndex = i),
+            children: [
+              // Page 0 (top): Horizontal PageView (Cover ↔ Comments)
+              PageView(
+                controller: _pageController,
+                onPageChanged: (i) =>
+                    setState(() => _currentPageIndex = i),
+                children: [
+                  _buildCoverPage(context, track),
+                  _buildCommentPage(context, track?.bvid),
+                ],
+              ),
+              // Page 1 (bottom): Lyrics panel
+              _buildLyricsPage(track?.bvid, track?.cid),
+            ],
+          ),
+        ),
+
+        // Page indicators
+        _buildPageIndicators(),
+
+        // Seek bar & controls
+        const PlayerSeekBar(),
+        const SizedBox(height: 8),
+        const PlayerControls(),
+        const SizedBox(height: 32),
+      ],
+    );
+  }
+
+  // ── Wide (landscape) layout ──────────────────────────────────────
+
   Widget _buildWideLayout() {
     final playerState = ref.watch(playerNotifierProvider);
     final track = playerState.currentTrack;
@@ -366,73 +126,7 @@ class _FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
 
     return Column(
       children: [
-        // Top bar
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.keyboard_arrow_down,
-                    color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
-              const Spacer(),
-              if (track != null)
-                Builder(
-                  builder: (context) {
-                    final favState =
-                        ref.watch(favoriteNotifierProvider);
-                    final isFav = favState.value
-                            ?.contains(track.songId) ??
-                        false;
-                    return IconButton(
-                      icon: Icon(
-                        isFav
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: isFav
-                            ? Colors.redAccent
-                            : Colors.white,
-                      ),
-                      tooltip: isFav
-                          ? l10n.removeFromFavorites
-                          : l10n.addToFavorites,
-                      onPressed: () async {
-                        if (track.songId > 0) {
-                          ref
-                              .read(favoriteNotifierProvider
-                                  .notifier)
-                              .toggleFavorite(track.songId);
-                        } else {
-                          final newId = await ref
-                              .read(favoriteNotifierProvider
-                                  .notifier)
-                              .favoriteFromTrack(track);
-                          ref
-                              .read(playerNotifierProvider
-                                  .notifier)
-                              .updateCurrentTrackSongId(newId);
-                        }
-                      },
-                    );
-                  },
-                ),
-              IconButton(
-                icon:
-                    const Icon(Icons.queue_music, color: Colors.white),
-                tooltip: l10n.queue,
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (_) => const PlayQueueSheet(),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-        // Main content: cover left, controls right
+        PlayerAppBar(track: track),
         Expanded(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -446,217 +140,47 @@ class _FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                       aspectRatio: 1,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                        child: track?.coverUrl != null
-                            ? _buildMainCover(track!.coverUrl!)
-                            : Container(
-                                color:
-                                    context.colorScheme.primaryContainer,
-                                child: const Icon(Icons.music_note,
-                                    size: 80, color: Colors.white70),
-                              ),
+                        child: buildCoverImage(context, track?.coverUrl),
                       ),
                     ),
                   ),
                 ),
               ),
-              // Right: Info + Controls
+              // Right: Swipeable content (Info / Lyrics / Comments)
               Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: PageView(
+                        controller: _wideRightPageController,
+                        onPageChanged: (i) =>
+                            setState(() => _wideRightPageIndex = i),
                         children: [
-                          // Title & artist
-                          Text(
-                            track?.title ?? l10n.unknownTitle,
-                            style: context.textTheme.headlineSmall
-                                ?.copyWith(color: Colors.white),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            track?.artist ?? l10n.unknownArtist,
-                            style: context.textTheme.bodyLarge
-                                ?.copyWith(color: Colors.white70),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 24),
-                          // Seek bar
-                          SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              trackHeight: 3,
-                              thumbShape:
-                                  const RoundSliderThumbShape(
-                                      enabledThumbRadius: 6),
-                              overlayShape:
-                                  const RoundSliderOverlayShape(
-                                      overlayRadius: 14),
-                              activeTrackColor: Colors.white,
-                              inactiveTrackColor: Colors.white24,
-                              thumbColor: Colors.white,
-                            ),
-                            child: Slider(
-                              value: _dragValue ??
-                                  (playerState
-                                              .duration.inMilliseconds >
-                                          0
-                                      ? playerState
-                                          .position.inMilliseconds
-                                          .toDouble()
-                                          .clamp(
-                                              0,
-                                              playerState.duration
-                                                  .inMilliseconds
-                                                  .toDouble())
-                                      : 0),
-                              max: playerState
-                                          .duration.inMilliseconds >
-                                      0
-                                  ? playerState
-                                      .duration.inMilliseconds
-                                      .toDouble()
-                                  : 1,
-                              onChangeStart: (value) {
-                                setState(
-                                    () => _dragValue = value);
-                              },
-                              onChanged: (value) {
-                                setState(
-                                    () => _dragValue = value);
-                              },
-                              onChangeEnd: (value) {
-                                ref
-                                    .read(playerNotifierProvider
-                                        .notifier)
-                                    .seekTo(Duration(
-                                        milliseconds:
-                                            value.toInt()));
-                                setState(
-                                    () => _dragValue = null);
-                              },
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16),
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  Formatters.formatDuration(
-                                      _dragValue != null
-                                          ? Duration(
-                                              milliseconds:
-                                                  _dragValue!
-                                                      .toInt())
-                                          : playerState.position),
-                                  style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 12),
-                                ),
-                                Text(
-                                  Formatters.formatDuration(
-                                      playerState.duration),
-                                  style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Controls
-                          Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceEvenly,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  _modeIcon(playerState.playMode),
-                                  color: Colors.white70,
-                                ),
-                                onPressed: () {
-                                  const modes = PlayMode.values;
-                                  final next = (playerState
-                                              .playMode.index +
-                                          1) %
-                                      modes.length;
-                                  ref
-                                      .read(playerNotifierProvider
-                                          .notifier)
-                                      .setMode(modes[next]);
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                    Icons.skip_previous,
-                                    color: Colors.white,
-                                    size: 36),
-                                onPressed: () {
-                                  ref
-                                      .read(playerNotifierProvider
-                                          .notifier)
-                                      .previous();
-                                },
-                              ),
-                              Container(
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: IconButton(
-                                  iconSize: 40,
-                                  icon: Icon(
-                                    playerState.isPlaying
-                                        ? Icons.pause
-                                        : Icons.play_arrow,
-                                    color: Colors.black87,
-                                  ),
-                                  onPressed: () {
-                                    final notifier = ref.read(
-                                        playerNotifierProvider
-                                            .notifier);
-                                    if (playerState.isPlaying) {
-                                      notifier.pause();
-                                    } else {
-                                      notifier.resume();
-                                    }
-                                  },
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                    Icons.skip_next,
-                                    color: Colors.white,
-                                    size: 36),
-                                onPressed: () {
-                                  ref
-                                      .read(playerNotifierProvider
-                                          .notifier)
-                                      .next();
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                    Icons.volume_up,
-                                    color: Colors.white70),
-                                onPressed: () =>
-                                    _showVolumeSheet(context, ref),
-                              ),
-                            ],
-                          ),
+                          // Page 0: Song info
+                          _buildWideInfoPage(track, l10n),
+                          // Page 1: Lyrics
+                          _buildLyricsPage(track?.bvid, track?.cid),
+                          // Page 2: Comments
+                          _buildCommentPage(context, track?.bvid),
                         ],
                       ),
                     ),
-                  ),
+                    // Page indicator for right panel
+                    _buildWidePageIndicator(),
+                    // Seek bar & controls
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          PlayerSeekBar(),
+                          SizedBox(height: 8),
+                          PlayerControls(),
+                          SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -666,43 +190,125 @@ class _FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
     );
   }
 
-  Widget _buildDot(int index) {
+  /// Song info panel used in the wide layout's right-side PageView.
+  Widget _buildWideInfoPage(dynamic track, dynamic l10n) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              track?.title ?? l10n.unknownTitle,
+              style: context.textTheme.headlineSmall
+                  ?.copyWith(color: Colors.white),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              track?.artist ?? l10n.unknownArtist,
+              style: context.textTheme.bodyLarge
+                  ?.copyWith(color: Colors.white70),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWidePageIndicator() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildDot(0, _wideRightPageIndex),
+          const SizedBox(width: 8),
+          _buildDot(1, _wideRightPageIndex),
+          const SizedBox(width: 8),
+          _buildDot(2, _wideRightPageIndex),
+        ],
+      ),
+    );
+  }
+
+  // ── Shared helpers ──────────────────────────────────────────────
+
+  Widget _buildLyricsPage(String? bvid, int? cid) {
+    if (bvid == null || cid == null) {
+      return Center(
+        child: Text(
+          context.l10n.noLyrics,
+          style: const TextStyle(color: Colors.white38),
+        ),
+      );
+    }
+    return LyricsPanel(bvid: bvid, cid: cid);
+  }
+
+  Widget _buildPageIndicators() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Horizontal page dots (cover / comments)
+          if (_verticalPageIndex == 0) ...[
+            _buildDot(0, _currentPageIndex),
+            const SizedBox(width: 8),
+            _buildDot(1, _currentPageIndex),
+          ] else ...[
+            // On lyrics page show single active dot
+            _buildDot(0, 0),
+          ],
+          const SizedBox(width: 16),
+          // Vertical indicator: small arrow or dot
+          Icon(
+            _verticalPageIndex == 0
+                ? Icons.keyboard_arrow_down
+                : Icons.keyboard_arrow_up,
+            color: Colors.white54,
+            size: 20,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDot(int index, int activeIndex) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      width: _currentPageIndex == index ? 16 : 8,
+      width: activeIndex == index ? 16 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: _currentPageIndex == index
-            ? Colors.white
-            : Colors.white38,
+        color:
+            activeIndex == index ? Colors.white : Colors.white38,
         borderRadius: BorderRadius.circular(4),
       ),
     );
   }
 
-  Widget _buildCoverPage(BuildContext context, dynamic track, dynamic l10n) {
+  Widget _buildCoverPage(BuildContext context, dynamic track) {
+    final l10n = context.l10n;
     return Column(
       children: [
         const Spacer(),
-        // Cover art
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 48),
           child: AspectRatio(
             aspectRatio: 1,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: track?.coverUrl != null
-                  ? _buildMainCover(track!.coverUrl!)
-                  : Container(
-                      color: context.colorScheme.primaryContainer,
-                      child: const Icon(Icons.music_note,
-                          size: 80, color: Colors.white70),
-                    ),
+              child: buildCoverImage(context, track?.coverUrl),
             ),
           ),
         ),
         const SizedBox(height: 32),
-        // Title & artist
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
@@ -732,7 +338,15 @@ class _FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
     );
   }
 
-  Widget _buildCommentPage(BuildContext context, String bvid) {
+  Widget _buildCommentPage(BuildContext context, String? bvid) {
+    if (bvid == null) {
+      return Center(
+        child: Text(
+          context.l10n.noPlayingMusic,
+          style: const TextStyle(color: Colors.white70),
+        ),
+      );
+    }
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -745,87 +359,13 @@ class _FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
       ),
     );
   }
-  IconData _modeIcon(PlayMode mode) {
-    switch (mode) {
-      case PlayMode.sequential:
-        return Icons.arrow_forward;
-      case PlayMode.repeatAll:
-        return Icons.repeat;
-      case PlayMode.repeatOne:
-        return Icons.repeat_one;
-      case PlayMode.shuffle:
-        return Icons.shuffle;
-    }
-  }
 
-  void _showVolumeSheet(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(l10n.volume, style: Theme.of(ctx).textTheme.titleMedium),
-            const SizedBox(height: 16),
-            Consumer(
-              builder: (context, ref, _) {
-                final volume = ref.watch(
-                    playerNotifierProvider.select((s) => s.volume));
-                return Slider(
-                  value: volume,
-                  onChanged: (v) {
-                    ref.read(playerNotifierProvider.notifier).setVolume(v);
-                  },
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+  Widget _buildBackground(String coverUrl) {
+    return buildCoverImage(
+      context,
+      coverUrl,
+      colorOverlay: Colors.black54,
+      blendMode: BlendMode.darken,
     );
   }
-}
-
-Widget _buildBackgroundCover(String coverUrl) {
-  final isLocal = coverUrl.startsWith('/') || coverUrl.startsWith('file://');
-  if (isLocal) {
-    final path = coverUrl.startsWith('file://')
-        ? Uri.parse(coverUrl).toFilePath()
-        : coverUrl;
-    return Image.file(
-      File(path),
-      fit: BoxFit.cover,
-      color: Colors.black54,
-      colorBlendMode: BlendMode.darken,
-      errorBuilder: (_, __, ___) => const ColoredBox(color: Colors.black54),
-    );
-  }
-
-  return CachedNetworkImage(
-    imageUrl: coverUrl,
-    fit: BoxFit.cover,
-    color: Colors.black54,
-    colorBlendMode: BlendMode.darken,
-  );
-}
-
-Widget _buildMainCover(String coverUrl) {
-  final isLocal = coverUrl.startsWith('/') || coverUrl.startsWith('file://');
-  if (isLocal) {
-    final path = coverUrl.startsWith('file://')
-        ? Uri.parse(coverUrl).toFilePath()
-        : coverUrl;
-    return Image.file(
-      File(path),
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => const ColoredBox(color: Colors.black12),
-    );
-  }
-
-  return CachedNetworkImage(
-    imageUrl: coverUrl,
-    fit: BoxFit.cover,
-  );
 }

@@ -1,0 +1,76 @@
+{
+  "latest": "0.3.4",
+  "min_supported": "0.2.0",
+  "versions": [
+    {
+      "version": "0.3.4",
+      "build": 10,
+      "date": "2026-03-06",
+      "changelog": "修复蓝奏云下载有关 Bug",
+      "force_update_below": "0.2.0",
+      "assets": {
+        "android": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.4/busic-android.apk"
+        },
+        "windows": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.4/busic-windows-x64.zip"
+        },
+        "linux": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.4/busic-linux-x64.tar.gz"
+        },
+        "macos": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.4/busic-macos.zip"
+        }
+      }
+    },
+    {
+      "version": "0.3.3",
+      "build": 9,
+      "date": "2026-03-05",
+      "changelog": "添加歌词功能、优化播放体验.",
+      "force_update_below": "0.2.0",
+      "assets": {
+        "android": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.3/busic-android.apk",
+          "lanzou": {
+            "url": "https://wwbnl.lanzouw.com/imn5j3jvaeha",
+            "password": "9jah"
+          }
+        },
+        "windows": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.3/busic-windows-x64.zip",
+          "lanzou": {
+            "url": "https://wwbnl.lanzouw.com/iRUIM3jvaeqj"
+          }
+        },
+        "linux": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.3/busic-linux-x64.tar.gz"
+        },
+        "macos": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.3/busic-macos.zip"
+        }
+      }
+    },
+    {
+      "version": "0.3.2",
+      "build": 8,
+      "date": "2026-03-01",
+      "changelog": "",
+      "force_update_below": "0.2.0",
+      "assets": {
+        "android": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.2/busic-android.apk"
+        },
+        "windows": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.2/busic-windows-x64.zip"
+        },
+        "linux": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.2/busic-linux-x64.tar.gz"
+        },
+        "macos": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.2/busic-macos.zip"
+        }
+      }
+    }
+  ]
+}

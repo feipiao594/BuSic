@@ -74,6 +74,8 @@ class _FakeProber extends ProxyProber {
     List<String> proxies, {
     String testPath = '/GlowLED/BuSic/main/pubspec.yaml',
   }) async {
+    // For metadata URLs (full URLs), return the first entry as-is.
+    // For release proxies (base URLs), return the first entry as-is.
     return proxies.first;
   }
 }

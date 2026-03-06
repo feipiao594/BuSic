@@ -157,10 +157,18 @@ void main() {
   // ──── SECTION 3: 代理常量 ────
 
   group('代理常量', () {
-    test('kRawProxies 包含直连地址', () {
+    test('kMetadataUrls 包含 jsdelivr CDN 地址', () {
       expect(
-        kRawProxies,
-        contains('https://raw.githubusercontent.com'),
+        kMetadataUrls.any((url) => url.contains('cdn.jsdelivr.net')),
+        true,
+      );
+    });
+
+    test('kMetadataUrls 包含直连地址', () {
+      expect(
+        kMetadataUrls.any(
+            (url) => url.startsWith('https://raw.githubusercontent.com')),
+        true,
       );
     });
 
@@ -172,7 +180,7 @@ void main() {
     });
 
     test('代理列表非空', () {
-      expect(kRawProxies, isNotEmpty);
+      expect(kMetadataUrls, isNotEmpty);
       expect(kReleaseProxies, isNotEmpty);
     });
   });

@@ -7,50 +7,25 @@ import 'package:drift/drift.dart';
 import '../../../core/api/bili_dio.dart';
 import '../../../core/database/app_database.dart';
 import '../domain/models/download_task.dart' as domain;
+import 'download_engine.dart';
+import 'download_metrics.dart';
 import 'download_repository.dart';
-
-/// Tracks download speed and bytes for a single task.
-class _DownloadMetrics {
-  int totalBytes = 0;
-  int receivedBytes = 0;
-  double speed = 0.0;
-  int _prevReceived = 0;
-  int _prevTime = 0;
-
-  void update(int received, int total) {
-    totalBytes = total;
-    receivedBytes = received;
-    final now = DateTime.now().millisecondsSinceEpoch;
-    if (_prevTime == 0) {
-      _prevTime = now;
-      _prevReceived = received;
-      return;
-    }
-    final elapsed = now - _prevTime;
-    if (elapsed >= 500) {
-      final instantSpeed = (received - _prevReceived) * 1000.0 / elapsed;
-      speed = speed == 0 ? instantSpeed : 0.3 * instantSpeed + 0.7 * speed;
-      _prevReceived = received;
-      _prevTime = now;
-    }
-  }
-}
 
 /// Concrete implementation of [DownloadRepository] using Dio + Drift.
 class DownloadRepositoryImpl implements DownloadRepository {
-  final BiliDio _dio;
   final AppDatabase _db;
+  final DownloadEngine _engine;
   final Map<int, CancelToken> _cancelTokens = {};
   final Map<int, int> _lastDbProgress = {};
   final Map<int, int> _lastEmitTime = {};
-  final Map<int, _DownloadMetrics> _metricsMap = {};
+  final Map<int, DownloadMetrics> _metricsMap = {};
   final Map<int, domain.DownloadTask> _activeTaskCache = {};
   final StreamController<domain.DownloadTask?> _taskUpdateController =
       StreamController.broadcast();
 
   DownloadRepositoryImpl({required BiliDio dio, required AppDatabase db})
-      : _dio = dio,
-        _db = db;
+      : _db = db,
+        _engine = DownloadEngine(dio: dio);
 
   domain.DownloadTask _mapTask(DownloadTask row,
       {String? songTitle, String? songArtist, String? coverUrl}) {
@@ -112,7 +87,7 @@ class DownloadRepositoryImpl implements DownloadRepository {
   }) async {
     final cancelToken = CancelToken();
     _cancelTokens[taskId] = cancelToken;
-    final metrics = _DownloadMetrics();
+    final metrics = DownloadMetrics();
     _metricsMap[taskId] = metrics;
 
     try {
@@ -123,91 +98,45 @@ class DownloadRepositoryImpl implements DownloadRepository {
             cached.copyWith(status: domain.DownloadStatus.downloading);
       }
 
-      final headers = <String, dynamic>{
-        'Referer': 'https://www.bilibili.com',
-      };
-      if (startOffset > 0) {
-        headers['Range'] = 'bytes=$startOffset-';
-      }
-
-      final response = await _dio.get(
-        url,
-        options: Options(
-          responseType: ResponseType.stream,
-          headers: headers,
-        ),
+      await _engine.download(
+        url: url,
+        savePath: savePath,
         cancelToken: cancelToken,
-      );
+        startOffset: startOffset,
+        onProgress: (receivedBytes, totalBytes) {
+          if (totalBytes <= 0) return;
+          final progress =
+              ((receivedBytes / totalBytes) * 100).round().clamp(0, 100);
+          metrics.update(receivedBytes, totalBytes);
 
-      // Determine actual offset and total file size
-      int actualOffset = startOffset;
-      int totalBytes = 0;
-      if (startOffset > 0 && response.statusCode == 206) {
-        // Range request accepted — parse total from Content-Range header
-        final contentRange = response.headers.value('content-range');
-        if (contentRange != null) {
-          final match = RegExp(r'/(\d+)$').firstMatch(contentRange);
-          if (match != null) totalBytes = int.parse(match.group(1)!);
-        }
-      } else {
-        // Fresh download (or server doesn't support range)
-        actualOffset = 0;
-        final cl = response.headers.value(Headers.contentLengthHeader);
-        totalBytes = int.tryParse(cl ?? '') ?? 0;
-      }
+          // Persist to DB every 5%
+          final lastDb = _lastDbProgress[taskId] ??
+              (startOffset > 0 ? (startOffset * 100 ~/ totalBytes) : 0);
+          if (progress - lastDb >= 5) {
+            _lastDbProgress[taskId] = progress;
+            (_db.update(_db.downloadTasks)
+                  ..where((t) => t.id.equals(taskId)))
+                .write(DownloadTasksCompanion(progress: Value(progress)));
+          }
 
-      final file = File(savePath);
-      final raf = await file.open(
-        mode: actualOffset > 0 ? FileMode.append : FileMode.write,
-      );
-
-      int receivedBytes = actualOffset;
-
-      try {
-        // response.data is ResponseBody when responseType is stream
-        final dynamic responseData = response.data;
-        await for (final chunk in responseData.stream) {
-          if (cancelToken.isCancelled) break;
-          final bytes = chunk as List<int>;
-          await raf.writeFrom(bytes);
-          receivedBytes += bytes.length;
-
-          if (totalBytes > 0) {
-            final progress =
-                ((receivedBytes / totalBytes) * 100).round().clamp(0, 100);
-            metrics.update(receivedBytes, totalBytes);
-
-            // Persist to DB every 5%
-            final lastDb = _lastDbProgress[taskId] ??
-                (actualOffset > 0 ? (actualOffset * 100 ~/ totalBytes) : 0);
-            if (progress - lastDb >= 5) {
-              _lastDbProgress[taskId] = progress;
-              (_db.update(_db.downloadTasks)
-                    ..where((t) => t.id.equals(taskId)))
-                  .write(DownloadTasksCompanion(progress: Value(progress)));
-            }
-
-            // Emit to stream every ~300ms for real-time UI
-            final now = DateTime.now().millisecondsSinceEpoch;
-            final lastEmit = _lastEmitTime[taskId] ?? 0;
-            if (now - lastEmit >= 300 || progress >= 100) {
-              _lastEmitTime[taskId] = now;
-              final c = _activeTaskCache[taskId];
-              if (c != null) {
-                _taskUpdateController.add(c.copyWith(
-                  status: domain.DownloadStatus.downloading,
-                  progress: progress / 100.0,
-                  totalBytes: totalBytes,
-                  receivedBytes: receivedBytes,
-                  speed: metrics.speed,
-                ));
-              }
+          // Emit to stream every ~300ms for real-time UI
+          final now = DateTime.now().millisecondsSinceEpoch;
+          final lastEmit = _lastEmitTime[taskId] ?? 0;
+          if (now - lastEmit >= 300 || progress >= 100) {
+            _lastEmitTime[taskId] = now;
+            final c = _activeTaskCache[taskId];
+            if (c != null) {
+              _taskUpdateController.add(c.copyWith(
+                status: domain.DownloadStatus.downloading,
+                progress: progress / 100.0,
+                totalBytes: totalBytes,
+                receivedBytes: receivedBytes,
+                speed: metrics.speed,
+              ));
             }
           }
-        }
-      } finally {
-        await raf.close();
-      }
+        },
+      );
 
       if (cancelToken.isCancelled) return;
 
