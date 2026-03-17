@@ -49,6 +49,7 @@ class ParseRepositoryImpl implements ParseRepository {
       owner: data['owner']?['name'] as String? ?? '',
       ownerUid: data['owner']?['mid'] as int?,
       coverUrl: data['pic'] as String?,
+      description: data['desc'] as String?,
       pages: pages,
       duration: data['duration'] as int? ?? 0,
     );

@@ -77,6 +77,13 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
           // ── Video info card ──
           _buildInfoCard(videoInfo, colorScheme, textTheme, isMultiPage),
 
+          // ── Video description ──
+          if (videoInfo.description != null &&
+              videoInfo.description!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _buildDescription(videoInfo, colorScheme, textTheme),
+          ],
+
           // ── Page selection for multi-page videos ──
           if (isMultiPage) ...[
             const SizedBox(height: 12),
@@ -236,6 +243,40 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: const Icon(Icons.video_library, size: 40),
+    );
+  }
+
+  Widget _buildDescription(
+    BvidInfo videoInfo,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.description,
+                    size: 18, color: colorScheme.onSurfaceVariant),
+                const SizedBox(width: 8),
+                Text('简介',
+                    style: textTheme.titleSmall
+                        ?.copyWith(color: colorScheme.onSurfaceVariant)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              videoInfo.description!,
+              style: textTheme.bodyMedium,
+              maxLines: 5,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
