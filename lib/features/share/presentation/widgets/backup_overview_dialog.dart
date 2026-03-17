@@ -68,23 +68,25 @@ class _BackupOverviewDialogState extends State<BackupOverviewDialog> {
               ),
             ),
             const SizedBox(height: 8),
-            RadioListTile<bool>(
-              title: Text(l10n.mergeStrategy),
-              subtitle: Text(l10n.mergeStrategyDesc),
-              value: true,
+            RadioGroup<bool>(
               groupValue: _isMerge,
               onChanged: (value) {
                 if (value != null) setState(() => _isMerge = value);
               },
-            ),
-            RadioListTile<bool>(
-              title: Text(l10n.overwriteStrategy),
-              subtitle: Text(l10n.overwriteStrategyDesc),
-              value: false,
-              groupValue: _isMerge,
-              onChanged: (value) {
-                if (value != null) setState(() => _isMerge = value);
-              },
+              child: Column(
+                children: [
+                  _RadioOption<bool>(
+                    title: l10n.mergeStrategy,
+                    subtitle: l10n.mergeStrategyDesc,
+                    value: true,
+                  ),
+                  _RadioOption<bool>(
+                    title: l10n.overwriteStrategy,
+                    subtitle: l10n.overwriteStrategyDesc,
+                    value: false,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -160,6 +162,35 @@ class _InfoRow extends StatelessWidget {
           Text(value, style: context.textTheme.bodyMedium),
         ],
       ),
+    );
+  }
+}
+
+class _RadioOption<T> extends StatelessWidget {
+  const _RadioOption({
+    required this.title,
+    required this.subtitle,
+    required this.value,
+  });
+
+  final String title;
+  final String subtitle;
+  final T value;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(title),
+      subtitle: Text(subtitle),
+      leading: Radio<T>(
+        value: value,
+      ),
+      onTap: () {
+        // Find the RadioGroup ancestor and call onChanged
+        final group = context.findAncestorWidgetOfExactType<RadioGroup<T>>();
+        group?.onChanged(value);
+      },
+      contentPadding: EdgeInsets.zero,
     );
   }
 }

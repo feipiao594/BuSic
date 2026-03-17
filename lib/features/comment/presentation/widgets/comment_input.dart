@@ -98,8 +98,15 @@ class _CommentInputState extends State<CommentInput> {
       );
     }
 
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.only(
+        left: 12,
+        right: 12,
+        top: 8,
+        bottom: 8 + bottomInset,
+      ),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLow,
         border: Border(
