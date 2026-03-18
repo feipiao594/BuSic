@@ -80,36 +80,36 @@ class SearchResultList extends StatelessWidget {
           top: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
         ),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.chevron_left),
-              iconSize: 20,
-              visualDensity: VisualDensity.compact,
-              onPressed: currentPage > 1
-                  ? () => onPageChanged(currentPage - 1)
-                  : null,
-              tooltip: '上一页',
-            ),
-            const SizedBox(width: 4),
-            ..._buildPageNumbers(colorScheme),
-            const SizedBox(width: 4),
-            IconButton(
-              icon: const Icon(Icons.chevron_right),
-              iconSize: 20,
-              visualDensity: VisualDensity.compact,
-              onPressed: currentPage < totalPages
-                  ? () => onPageChanged(currentPage + 1)
-                  : null,
-              tooltip: '下一页',
-            ),
-            const SizedBox(width: 8),
-            if (isDesktop) _buildJumpToPage(colorScheme),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            iconSize: 20,
+            visualDensity: VisualDensity.compact,
+            onPressed: currentPage > 1
+                ? () => onPageChanged(currentPage - 1)
+                : null,
+            tooltip: '上一页',
+          ),
+          const SizedBox(width: 4),
+          ..._buildPageNumbers(colorScheme),
+          const SizedBox(width: 4),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            iconSize: 20,
+            visualDensity: VisualDensity.compact,
+            onPressed: currentPage < totalPages
+                ? () => onPageChanged(currentPage + 1)
+                : null,
+            tooltip: '下一页',
+          ),
+          const SizedBox(width: 8),
+          if (isDesktop)
+            _buildJumpToPage(colorScheme)
+          else
+            _buildJumpToPageDialog(context, colorScheme),
+        ],
       ),
     );
   }
@@ -213,6 +213,60 @@ class SearchResultList extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget _buildJumpToPageDialog(BuildContext context, ColorScheme colorScheme) {
+    return IconButton(
+      icon: const Icon(Icons.edit, size: 20),
+      visualDensity: VisualDensity.compact,
+      tooltip: '跳转页面',
+      onPressed: () => _showJumpToPageDialog(context, colorScheme),
+    );
+  }
+
+  Future<void> _showJumpToPageDialog(
+      BuildContext context, ColorScheme colorScheme) async {
+    final controller = TextEditingController();
+    final result = await showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('跳转页面'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: '输入 1-$totalPages',
+            labelText: '页码',
+          ),
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          onSubmitted: (value) {
+            final page = int.tryParse(value);
+            if (page != null && page >= 1 && page <= totalPages) {
+              Navigator.of(context).pop(page);
+            }
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final page = int.tryParse(controller.text);
+              if (page != null && page >= 1 && page <= totalPages) {
+                Navigator.of(context).pop(page);
+              }
+            },
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+    if (result != null) {
+      onPageChanged(result);
+    }
   }
 
   Widget _buildPageButton(int page, ColorScheme colorScheme) {
