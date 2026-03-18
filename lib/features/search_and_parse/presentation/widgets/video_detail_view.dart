@@ -34,6 +34,7 @@ class VideoDetailView extends ConsumerStatefulWidget {
 
 class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
   bool _showComments = false;
+  bool _isDescriptionExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -77,11 +78,34 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
           // ── Video info card ──
           _buildInfoCard(videoInfo, colorScheme, textTheme, isMultiPage),
 
-          // ── Video description ──
+          // ── Description Section ──
           if (videoInfo.description != null &&
               videoInfo.description!.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            _buildDescription(videoInfo, colorScheme, textTheme),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '简介',
+                      style: textTheme.titleSmall?.copyWith(
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildDescriptionText(
+                      videoInfo.description!,
+                      _isDescriptionExpanded,
+                      textTheme,
+                      colorScheme,
+                      () => setState(() => _isDescriptionExpanded = !_isDescriptionExpanded),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
 
           // ── Page selection for multi-page videos ──
@@ -243,40 +267,6 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: const Icon(Icons.video_library, size: 40),
-    );
-  }
-
-  Widget _buildDescription(
-    BvidInfo videoInfo,
-    ColorScheme colorScheme,
-    TextTheme textTheme,
-  ) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.description,
-                    size: 18, color: colorScheme.onSurfaceVariant),
-                const SizedBox(width: 8),
-                Text('简介',
-                    style: textTheme.titleSmall
-                        ?.copyWith(color: colorScheme.onSurfaceVariant)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              videoInfo.description!,
-              style: textTheme.bodyMedium,
-              maxLines: 5,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -489,5 +479,69 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
       ref.invalidate(playlistListNotifierProvider);
       ref.invalidate(playlistDetailNotifierProvider(selectedPlaylistId));
     }
+  }
+
+  Widget _buildDescriptionText(
+    String description,
+    bool isExpanded,
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+    VoidCallback onToggle,
+  ) {
+    const int maxLines = 3;
+    final lines = description.split('\n');
+    final needsTruncation = lines.length > maxLines;
+
+    if (!isExpanded && needsTruncation) {
+      final truncatedText = lines.take(maxLines).join('\n');
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            truncatedText,
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          InkWell(
+            onTap: onToggle,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                '展开',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.primary,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          description,
+          style: textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+        if (needsTruncation)
+          InkWell(
+            onTap: onToggle,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                '收起',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.primary,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }

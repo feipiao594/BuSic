@@ -185,11 +185,7 @@ class _RadioOption<T> extends StatelessWidget {
       leading: Radio<T>(
         value: value,
       ),
-      onTap: () {
-        // Find the RadioGroup ancestor and call onChanged
-        final group = context.findAncestorWidgetOfExactType<RadioGroup<T>>();
-        group?.onChanged(value);
-      },
+      onTap: () {},
       contentPadding: EdgeInsets.zero,
     );
   }
