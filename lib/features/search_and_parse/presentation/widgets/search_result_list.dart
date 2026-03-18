@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../shared/extensions/context_extensions.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/models/bvid_info.dart';
 
@@ -60,14 +61,15 @@ class SearchResultList extends StatelessWidget {
             },
           ),
         ),
-        _buildPaginationBar(colorScheme),
+        _buildPaginationBar(context, colorScheme),
       ],
     );
   }
 
   // ── Pagination bar ──────────────────────────────────────────────────
 
-  Widget _buildPaginationBar(ColorScheme colorScheme) {
+  Widget _buildPaginationBar(BuildContext context, ColorScheme colorScheme) {
+    final isDesktop = context.isDesktop;
     if (totalPages <= 1) return const SizedBox.shrink();
 
     return Container(
@@ -105,7 +107,7 @@ class SearchResultList extends StatelessWidget {
               tooltip: '下一页',
             ),
             const SizedBox(width: 8),
-            _buildJumpToPage(colorScheme),
+            if (isDesktop) _buildJumpToPage(colorScheme),
           ],
         ),
       ),
