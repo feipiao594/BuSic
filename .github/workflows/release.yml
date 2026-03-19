@@ -190,7 +190,8 @@ jobs:
           # Copy icon
           cp assets/images/app_icon.png AppDir/usr/share/icons/hicolor/256x256/apps/busic.png
           
-          # Copy .desktop file
+          # Copy .desktop file to BOTH locations (root for appimagetool, usr/share for runtime)
+          cp scripts/appimage/AppDir/busic.desktop AppDir/
           cp scripts/appimage/AppDir/busic.desktop AppDir/usr/share/applications/
           
           # Download AppRun from AppImage community
