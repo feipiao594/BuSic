@@ -187,7 +187,8 @@ jobs:
           # Create symlink for main executable
           ln -sf ../lib/busic AppDir/usr/bin/busic
           
-          # Copy icon
+          # Copy icon to BOTH locations (root for appimagetool, usr/share for runtime)
+          cp assets/images/app_icon.png AppDir/busic.png
           cp assets/images/app_icon.png AppDir/usr/share/icons/hicolor/256x256/apps/busic.png
           
           # Copy .desktop file to BOTH locations (root for appimagetool, usr/share for runtime)
