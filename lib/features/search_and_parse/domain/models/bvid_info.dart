@@ -26,9 +26,6 @@ class BvidInfo with _$BvidInfo {
     /// Cover image URL.
     String? coverUrl,
 
-    /// Video description (简介).
-    String? description,
-
     /// List of video pages (分P). Single-page videos have one entry.
     @Default([]) List<PageInfo> pages,
 

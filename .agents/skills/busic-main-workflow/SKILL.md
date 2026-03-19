@@ -67,6 +67,12 @@ flutter run -d <device_id> --debug
 # 常用平台：windows / linux / macos / android / ios
 ```
 
+### 7. Git 提交与版本管理
+参考 `busic-git-commit` skill，提交前确保：
+- 运行 `flutter analyze --no-fatal-infos` 无 error
+- 运行 `flutter test` 全部通过
+- 使用约定式提交格式
+
 ### 相关子Skill
 
 | Skill | 用途 |
@@ -78,6 +84,7 @@ flutter run -d <device_id> --debug
 | [busic-ui-development](./busic-ui-development/SKILL.md) | UI层开发规范 |
 | [busic-testing](./busic-testing/SKILL.md) | 测试规范 |
 | [busic-skills-maintenance](./busic-skills-maintenance/SKILL.md) | Skills维护规范 |
+| [busic-git-commit](./busic-git-commit/SKILL.md) | Git提交与版本管理 |
 
 ### 代码编写时参考
 

@@ -34,7 +34,6 @@ class VideoDetailView extends ConsumerStatefulWidget {
 
 class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
   bool _showComments = false;
-  bool _isDescriptionExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -71,42 +70,12 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
               child: TextButton.icon(
                 onPressed: widget.onBack,
                 icon: const Icon(Icons.arrow_back, size: 18),
-                label: Text(l10n.backToSearchResults),
+                label: const Text('返回搜索结果'),
               ),
             ),
 
           // ── Video info card ──
           _buildInfoCard(videoInfo, colorScheme, textTheme, isMultiPage),
-
-          // ── Description Section ──
-          if (videoInfo.description != null &&
-              videoInfo.description!.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '简介',
-                      style: textTheme.titleSmall?.copyWith(
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildDescriptionText(
-                      videoInfo.description!,
-                      _isDescriptionExpanded,
-                      textTheme,
-                      colorScheme,
-                      () => setState(() => _isDescriptionExpanded = !_isDescriptionExpanded),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
 
           // ── Page selection for multi-page videos ──
           if (isMultiPage) ...[
@@ -138,7 +107,7 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
                       : () =>
                           _playParsedVideo(context, videoInfo, selectedPages),
                   icon: const Icon(Icons.play_arrow),
-                  label: Text(l10n.play),
+                  label: const Text('播放'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -162,7 +131,7 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
               children: [
                 ListTile(
                   leading: const Icon(Icons.comment),
-                  title: Text(l10n.commentSection),
+                  title: const Text('评论区'),
                   trailing: Icon(
                     _showComments
                         ? Icons.keyboard_arrow_up
@@ -243,7 +212,7 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
                         Icon(Icons.list,
                             size: 14, color: colorScheme.primary),
                         const SizedBox(width: 4),
-                        Text(AppLocalizations.of(context)!.nParts(videoInfo.pages.length),
+                        Text('${videoInfo.pages.length} 个分P',
                             style: textTheme.bodySmall
                                 ?.copyWith(color: colorScheme.primary)),
                       ],
@@ -284,9 +253,9 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
       child: Column(
         children: [
           CheckboxListTile(
-            title: Text(AppLocalizations.of(context)!.selectPages),
+            title: const Text('选择分P'),
             subtitle:
-                Text(AppLocalizations.of(context)!.selectedPageCount(selectedPages.length, videoInfo.pages.length)),
+                Text('已选 ${selectedPages.length}/${videoInfo.pages.length}'),
             value: allSelected
                 ? true
                 : selectedPages.isEmpty
@@ -361,10 +330,9 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
           .playTrackList(tracks, 0, playlistName: videoInfo.title);
     } catch (e) {
       if (context.mounted) {
-        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.playFailed(e.toString())),
+            content: Text('播放失败: $e'),
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
           ),
@@ -382,7 +350,6 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
     if (pagesToDownload.isEmpty) return;
 
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final l10n = AppLocalizations.of(context)!;
     try {
       final songIds = await ref
           .read(parseNotifierProvider.notifier)
@@ -399,10 +366,10 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
 
       if (qualities.isEmpty) {
         scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.noQualitiesAvailable),
+          const SnackBar(
+            content: Text('未获取到可用音质'),
             behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
+            margin: EdgeInsets.only(bottom: 80, left: 16, right: 16),
           ),
         );
         return;
@@ -437,7 +404,7 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
             }
             scaffoldMessenger.showSnackBar(
               SnackBar(
-                content: Text(l10n.startedDownloadCount(startedCount)),
+                content: Text('已开始下载 $startedCount 首歌曲'),
                 behavior: SnackBarBehavior.floating,
                 margin: const EdgeInsets.only(
                     bottom: 80, left: 16, right: 16),
@@ -449,7 +416,7 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
     } catch (e) {
       scaffoldMessenger.showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.downloadFailed),
+          content: Text('下载失败: $e'),
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
         ),
@@ -471,7 +438,7 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
     if (context.mounted && songIds.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.addedToPlaylistCount(songIds.length)),
+          content: Text('已添加 ${songIds.length} 首歌曲到歌单'),
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
         ),
@@ -479,69 +446,5 @@ class _VideoDetailViewState extends ConsumerState<VideoDetailView> {
       ref.invalidate(playlistListNotifierProvider);
       ref.invalidate(playlistDetailNotifierProvider(selectedPlaylistId));
     }
-  }
-
-  Widget _buildDescriptionText(
-    String description,
-    bool isExpanded,
-    TextTheme textTheme,
-    ColorScheme colorScheme,
-    VoidCallback onToggle,
-  ) {
-    const int maxLines = 3;
-    final lines = description.split('\n');
-    final needsTruncation = lines.length > maxLines;
-
-    if (!isExpanded && needsTruncation) {
-      final truncatedText = lines.take(maxLines).join('\n');
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            truncatedText,
-            style: textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          InkWell(
-            onTap: onToggle,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                '展开',
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.primary,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          description,
-          style: textTheme.bodyMedium?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-        if (needsTruncation)
-          InkWell(
-            onTap: onToggle,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                '收起',
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.primary,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
   }
 }

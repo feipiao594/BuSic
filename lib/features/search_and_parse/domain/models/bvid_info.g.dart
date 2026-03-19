@@ -13,7 +13,6 @@ _$BvidInfoImpl _$$BvidInfoImplFromJson(Map<String, dynamic> json) =>
       owner: json['owner'] as String,
       ownerUid: (json['ownerUid'] as num?)?.toInt(),
       coverUrl: json['coverUrl'] as String?,
-      description: json['description'] as String?,
       pages: (json['pages'] as List<dynamic>?)
               ?.map((e) => PageInfo.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -28,7 +27,6 @@ Map<String, dynamic> _$$BvidInfoImplToJson(_$BvidInfoImpl instance) =>
       'owner': instance.owner,
       'ownerUid': instance.ownerUid,
       'coverUrl': instance.coverUrl,
-      'description': instance.description,
       'pages': instance.pages,
       'duration': instance.duration,
     };

@@ -35,9 +35,6 @@ mixin _$BvidInfo {
   /// Cover image URL.
   String? get coverUrl => throw _privateConstructorUsedError;
 
-  /// Video description (简介).
-  String? get description => throw _privateConstructorUsedError;
-
   /// List of video pages (分P). Single-page videos have one entry.
   List<PageInfo> get pages => throw _privateConstructorUsedError;
 
@@ -65,7 +62,6 @@ abstract class $BvidInfoCopyWith<$Res> {
       String owner,
       int? ownerUid,
       String? coverUrl,
-      String? description,
       List<PageInfo> pages,
       int duration});
 }
@@ -90,7 +86,6 @@ class _$BvidInfoCopyWithImpl<$Res, $Val extends BvidInfo>
     Object? owner = null,
     Object? ownerUid = freezed,
     Object? coverUrl = freezed,
-    Object? description = freezed,
     Object? pages = null,
     Object? duration = null,
   }) {
@@ -114,10 +109,6 @@ class _$BvidInfoCopyWithImpl<$Res, $Val extends BvidInfo>
       coverUrl: freezed == coverUrl
           ? _value.coverUrl
           : coverUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
               as String?,
       pages: null == pages
           ? _value.pages
@@ -145,7 +136,6 @@ abstract class _$$BvidInfoImplCopyWith<$Res>
       String owner,
       int? ownerUid,
       String? coverUrl,
-      String? description,
       List<PageInfo> pages,
       int duration});
 }
@@ -168,7 +158,6 @@ class __$$BvidInfoImplCopyWithImpl<$Res>
     Object? owner = null,
     Object? ownerUid = freezed,
     Object? coverUrl = freezed,
-    Object? description = freezed,
     Object? pages = null,
     Object? duration = null,
   }) {
@@ -193,10 +182,6 @@ class __$$BvidInfoImplCopyWithImpl<$Res>
           ? _value.coverUrl
           : coverUrl // ignore: cast_nullable_to_non_nullable
               as String?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
       pages: null == pages
           ? _value._pages
           : pages // ignore: cast_nullable_to_non_nullable
@@ -218,7 +203,6 @@ class _$BvidInfoImpl implements _BvidInfo {
       required this.owner,
       this.ownerUid,
       this.coverUrl,
-      this.description,
       final List<PageInfo> pages = const [],
       this.duration = 0})
       : _pages = pages;
@@ -246,10 +230,6 @@ class _$BvidInfoImpl implements _BvidInfo {
   @override
   final String? coverUrl;
 
-  /// Video description (简介).
-  @override
-  final String? description;
-
   /// List of video pages (分P). Single-page videos have one entry.
   final List<PageInfo> _pages;
 
@@ -269,7 +249,7 @@ class _$BvidInfoImpl implements _BvidInfo {
 
   @override
   String toString() {
-    return 'BvidInfo(bvid: $bvid, title: $title, owner: $owner, ownerUid: $ownerUid, coverUrl: $coverUrl, description: $description, pages: $pages, duration: $duration)';
+    return 'BvidInfo(bvid: $bvid, title: $title, owner: $owner, ownerUid: $ownerUid, coverUrl: $coverUrl, pages: $pages, duration: $duration)';
   }
 
   @override
@@ -284,8 +264,6 @@ class _$BvidInfoImpl implements _BvidInfo {
                 other.ownerUid == ownerUid) &&
             (identical(other.coverUrl, coverUrl) ||
                 other.coverUrl == coverUrl) &&
-            (identical(other.description, description) ||
-                other.description == description) &&
             const DeepCollectionEquality().equals(other._pages, _pages) &&
             (identical(other.duration, duration) ||
                 other.duration == duration));
@@ -293,16 +271,8 @@ class _$BvidInfoImpl implements _BvidInfo {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      bvid,
-      title,
-      owner,
-      ownerUid,
-      coverUrl,
-      description,
-      const DeepCollectionEquality().hash(_pages),
-      duration);
+  int get hashCode => Object.hash(runtimeType, bvid, title, owner, ownerUid,
+      coverUrl, const DeepCollectionEquality().hash(_pages), duration);
 
   /// Create a copy of BvidInfo
   /// with the given fields replaced by the non-null parameter values.
@@ -327,7 +297,6 @@ abstract class _BvidInfo implements BvidInfo {
       required final String owner,
       final int? ownerUid,
       final String? coverUrl,
-      final String? description,
       final List<PageInfo> pages,
       final int duration}) = _$BvidInfoImpl;
 
@@ -353,10 +322,6 @@ abstract class _BvidInfo implements BvidInfo {
   /// Cover image URL.
   @override
   String? get coverUrl;
-
-  /// Video description (简介).
-  @override
-  String? get description;
 
   /// List of video pages (分P). Single-page videos have one entry.
   @override

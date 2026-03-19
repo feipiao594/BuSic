@@ -7,6 +7,8 @@
 
 **一个高颜值、跨平台、基于 Flutter 的音乐播放器 🎧**
 
+交流群（QQ）：1023137284
+
 [![GitHub Release](https://img.shields.io/github/v/release/GlowLED/BuSic?color=blue&style=flat-square)](https://github.com/GlowLED/BuSic/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Android%20%7C%20iOS-lightgrey?style=flat-square)](#)
 [![Flutter](https://img.shields.io/badge/Flutter-3.29-02569B?logo=flutter&style=flat-square)](https://flutter.dev/)
