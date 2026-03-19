@@ -61,10 +61,14 @@ git log main..develop --oneline
 
 1. 修改 `pubspec.yaml` 中的 `version` 字段
 2. 更新 `CHANGELOG.md` 添加版本发布日期
-3. 提交版本更新：
+3. **更新 `versions-manifest.json`**：
+   - 添加新版本条目到 `versions` 数组顶部
+   - 更新 `latest` 字段为新版本号
+   - 填写 `build`、`date`、`changelog` 和 `assets`
+4. 提交版本更新：
 
 ```bash
-git add pubspec.yaml CHANGELOG.md
+git add pubspec.yaml CHANGELOG.md versions-manifest.json
 git commit -m "chore(release): bump version to x.y.z+build"
 ```
 

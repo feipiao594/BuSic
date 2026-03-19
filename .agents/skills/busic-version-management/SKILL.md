@@ -53,6 +53,42 @@ version: 0.3.4+1  # 必须保持最新
 v0.3.4  # 不含build号
 ```
 
+### versions-manifest.json
+
+```json
+{
+  "latest": "0.3.6",
+  "min_supported": "0.2.0",
+  "versions": [
+    {
+      "version": "0.3.6",
+      "build": 12,
+      "date": "2026-03-19",
+      "changelog": "## Features\n- 新功能...",
+      "force_update_below": "0.2.0",
+      "assets": {
+        "android": { "github": "https://github.com/..." },
+        "windows": { "github": "https://github.com/..." },
+        "linux": { "github": "https://github.com/..." },
+        "macos": { "github": "https://github.com/..." }
+      }
+    }
+  ]
+}
+```
+
+**重要**：每次发布新版本时，必须更新此文件！
+
+| 字段 | 说明 |
+|------|------|
+| `latest` | 最新版本号（不含build号） |
+| `min_supported` | 最低支持的版本，低于此版本强制更新 |
+| `versions[].version` | 版本号（不含build号） |
+| `versions[].build` | 构建号 |
+| `versions[].date` | 发布日期 YYYY-MM-DD |
+| `versions[].changelog` | 更新日志（支持 Markdown） |
+| `versions[].assets` | 各平台下载链接 |
+
 ## 版本号更新规则
 
 ### Major（主版本）

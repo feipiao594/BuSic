@@ -1,7 +1,49 @@
 {
-  "latest": "0.3.4",
+  "latest": "0.3.6",
   "min_supported": "0.2.0",
   "versions": [
+    {
+      "version": "0.3.6",
+      "build": 12,
+      "date": "2026-03-19",
+      "changelog": "## Features\n- feat: disable macos window btn\n- feat: 添加版本发布skills，优化视频详情页\n\n## Bug Fixes\n- fix: cannot start because of icon missing\n- fix(linux): copy icon to AppDir root for appimagetool\n- fix(linux): copy desktop file to AppDir root for appimagetool",
+      "force_update_below": "0.2.0",
+      "assets": {
+        "android": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.6/busic-android.apk"
+        },
+        "windows": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.6/busic-windows-x64.zip"
+        },
+        "linux": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.6/busic-linux-x64.deb"
+        },
+        "macos": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.6/busic-macos.zip"
+        }
+      }
+    },
+    {
+      "version": "0.3.5",
+      "build": 11,
+      "date": "2026-03-19",
+      "changelog": "## Features\n- feat(release): 修改Linux打包方式为deb/rpm/AppImage\n- feat: 添加版本发布skills，优化视频详情页\n- feat(search): 优化简介框展开收起逻辑，修复Radio废弃API\n- feat: 视频详情页显示视频简介\n- feat: 添加多语言支持的本地化文本，优化用户界面提示信息\n- feat: 优化回复指示器样式，防止误触\n- feat: 使用 SingleChildScrollView 优化分页按钮布局\n\n## Bug Fixes\n- fix(share): 修复备份导入弹窗RadioGroup编译错误\n- fix(share): 修复备份导入弹窗Radio组件编译错误\n- fix(search): 修复手机上分页跳转功能\n- fix(search): 修复手机上分页跳转输入框超出屏幕的问题\n- fix: 修复评论输入框被键盘遮挡问题，迁移RadioGroup到新API\n\n## Documentation\n- docs: add .opencode to .gitignore",
+      "force_update_below": "0.2.0",
+      "assets": {
+        "android": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.5/busic-android.apk"
+        },
+        "windows": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.5/busic-windows-x64.zip"
+        },
+        "linux": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.5/busic-linux-x64.tar.gz"
+        },
+        "macos": {
+          "github": "https://github.com/GlowLED/BuSic/releases/download/v0.3.5/busic-macos.zip"
+        }
+      }
+    },
     {
       "version": "0.3.4",
       "build": 10,
